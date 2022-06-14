@@ -10,7 +10,6 @@
     "clean": "rimraf dist",
     "dev": "cross-env NODE_OPTIONS='--max-http-header-size 32768' NODE_ENV=development yarn run-dev",
     "run-dev": "ts-node-dev --transpile-only src/server.ts",
-    "generate-types": "openapi-typescript ./node_modules/@blockfrost/openapi/openapi.yaml --output ./src/types/openapi.ts",
     "lint": "eslint ./src/**/*.ts",
     "start": "yarn build && node --max-http-header-size=32768 dist/server.js",
     "start-cluster": "pm2 start pm2.yaml",
@@ -55,6 +54,6 @@
   },
   "packageManager": "yarn@3.2.1",
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }
