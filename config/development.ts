@@ -1,6 +1,5 @@
 export default {
   server: {
-    port: 3000,
-    logLevel: 'debug',
+    port: 3001,
   },
 };

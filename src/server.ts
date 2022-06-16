@@ -1,12 +1,20 @@
 import app from './app';
 import config from 'config';
 
-const logLevel: string = config.get('server.logLevel');
 const port = Number(config.get('server.port'));
 
 const server = app({
   logger: {
-    level: logLevel,
+    transport:
+      process.env.NODE_ENV === 'development'
+        ? {
+            target: 'pino-pretty',
+            options: {
+              translateTime: 'HH:MM:ss Z',
+              ignore: 'pid,hostname',
+            },
+          }
+        : undefined,
   },
   ignoreTrailingSlash: true,
   // https://www.fastify.io/docs/latest/Server/#maxparamlength
