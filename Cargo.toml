@@ -1,0 +1,10 @@
+[package]
+name = "denotarius-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+warp = "0.3"
+blockfrost = "0.2.0"
