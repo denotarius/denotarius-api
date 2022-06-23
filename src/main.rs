@@ -11,7 +11,7 @@ use axum::{
 use serde_json::json;
 use std::net::SocketAddr;
 use tower_http::cors::{CorsLayer, Origin};
-use utils::get_port;
+use utils::{get_port, signal_shutdown};
 
 #[tokio::main]
 
@@ -36,6 +36,7 @@ async fn main() {
 
     axum::Server::bind(&address)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(signal_shutdown())
         .await
         .unwrap();
 }
