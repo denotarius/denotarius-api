@@ -1,36 +1,84 @@
-// use blockfrost::{load, BlockFrostApi};
+use axum::{
+    extract::{ContentLengthLimit, Multipart},
+    http::{self, Method, StatusCode},
+    response::{Html, IntoResponse},
+    routing::{get, post},
+    Json, Router,
+};
+
 use serde_json::json;
-use warp::reply::Json;
-use warp::Filter;
+use std::net::SocketAddr;
+use tower_http::cors::{CorsLayer, Origin};
 
 #[tokio::main]
 
 async fn main() {
-    // root
-    let root = warp::path::end().map(|| "Welcome to the denotarius API server");
+    let app = Router::new()
+        .route("/", get(root))
+        .route("/status", get(status))
+        .route("/attestation/submit", post(attestation_submit))
+        .route("/attestation/:order_id", get(attestation_order))
+        .layer(
+            CorsLayer::new()
+                .allow_origin(Origin::list(vec![
+                    "http://localhost:3000".parse().unwrap(),
+                    "https://denottarius.io".parse().unwrap(),
+                ]))
+                .allow_methods([Method::GET])
+                .allow_headers(vec![http::header::CONTENT_TYPE]),
+        );
 
-    // status
-    let status = warp::path("status").map(|| -> Json {
-        const VERSION: &str = env!("CARGO_PKG_VERSION");
-        let response = json!({
-            "is_healthy": true,
-            "version": VERSION
-        });
+    let address = SocketAddr::from(([127, 0, 0, 1], 3001));
 
-        warp::reply::json(&response)
+    axum::Server::bind(&address)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+
+async fn root() -> Html<&'static str> {
+    Html("Denotarius API")
+}
+
+async fn status() -> impl IntoResponse {
+    const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+    let response = json!({
+        "is_healthy": true,
+        "version": VERSION
     });
 
-    // attestation order
-    let attestation_order =
-        warp::path!("attestation" / String).map(|order_id| format!("Hello, {}!", order_id));
+    (StatusCode::OK, Json(response))
+}
 
-    // attestation submit
-    let attestation_submit = warp::get()
-        .and(warp::path("attestation"))
-        .and(warp::path("submit"))
-        .map(|| format!("Hello"));
+async fn attestation_submit(
+    ContentLengthLimit(mut multipart): ContentLengthLimit<
+        Multipart,
+        {
+            250 * 1024 * 1024 /* 250mb */
+        },
+    >,
+) {
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap().to_string();
+        let file_name = field.file_name().unwrap().to_string();
+        let content_type = field.content_type().unwrap().to_string();
+        let data = field.bytes().await.unwrap();
 
-    let routes = root.or(status).or(attestation_order).or(attestation_submit);
+        println!(
+            "Length of `{}` (`{}`: `{}`) is {} bytes",
+            name,
+            file_name,
+            content_type,
+            data.len()
+        );
+    }
+}
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3000)).await;
+async fn attestation_order(order_id: String) -> impl IntoResponse {
+    let response = json!({
+        "order_id": &order_id,
+    });
+
+    Json(response)
 }
