@@ -1,4 +1,5 @@
 use std::env;
+use tower_http::cors::Origin;
 
 pub async fn signal_shutdown() {
     tokio::signal::ctrl_c()
@@ -26,12 +27,14 @@ fn is_prod() -> bool {
     is_prod
 }
 
-pub fn get_allowed_origins() {
+pub fn get_allowed_origins() -> Origin {
     let is_prod = is_prod();
 
-    if is_prod {
-        vec!["https://denottarius.io"]
+    let origins = if is_prod {
+        Origin::list(vec!["https://denottarius.io".parse().unwrap()])
     } else {
-        vec!["https://www.denotarius.io"]
+        Origin::list(vec!["https://www.denotarius.io".parse().unwrap()])
     };
+
+    origins
 }

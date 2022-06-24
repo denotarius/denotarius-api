@@ -10,13 +10,14 @@ use axum::{
 };
 use serde_json::json;
 use std::net::SocketAddr;
-use tower_http::cors::{CorsLayer, Origin};
-use utils::{get_port, signal_shutdown};
+use tower_http::cors::CorsLayer;
+use utils::{get_allowed_origins, get_port, signal_shutdown};
 
 #[tokio::main]
 
 async fn main() {
     let port = get_port();
+    let allowed_origins = get_allowed_origins();
     let address = SocketAddr::from(([127, 0, 0, 1], port));
     let app = Router::new()
         .route("/", get(root))
@@ -25,12 +26,8 @@ async fn main() {
         .route("/attestation/:order_id", get(attestation_order))
         .layer(
             CorsLayer::new()
-                .allow_origin(Origin::list(vec![
-                    // TODO: split prod / dev
-                    "http://localhost:3000".parse().unwrap(),
-                    "https://denottarius.io".parse().unwrap(),
-                ]))
-                .allow_methods([Method::GET])
+                .allow_origin(allowed_origins)
+                .allow_methods(vec![Method::GET, Method::POST])
                 .allow_headers(vec![http::header::CONTENT_TYPE]),
         );
 
