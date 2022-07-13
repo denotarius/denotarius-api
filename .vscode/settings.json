@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["Denotarius", "dotenv", "dotenvy", "ipfs"]
+  "cSpell.words": [
+    "Denotarius",
+    "dotenv",
+    "dotenvy",
+    "hasher",
+    "ipfs",
+    "rusqlite"
+  ]
 }

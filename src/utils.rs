@@ -1,3 +1,4 @@
+use chrono::prelude::{DateTime, Utc};
 use std::env;
 use tower_http::cors::Origin;
 
@@ -21,20 +22,25 @@ pub fn get_port() -> u16 {
     port
 }
 
-fn is_prod() -> bool {
-    let is_prod = env::var("PROFILE").unwrap().to_string() == "release";
+fn is_dev() -> bool {
+    let is_dev = env::var("OPT_LEVEL").unwrap().to_string() == "DEBUG";
 
-    is_prod
+    is_dev
 }
 
 pub fn get_allowed_origins() -> Origin {
-    let is_prod = is_prod();
+    let is_dev = is_dev();
 
-    let origins = if is_prod {
-        Origin::list(vec!["https://denottarius.io".parse().unwrap()])
+    let origins = if is_dev {
+        Origin::list(vec!["http://localhost:3000".parse().unwrap()])
     } else {
-        Origin::list(vec!["https://www.denotarius.io".parse().unwrap()])
+        Origin::list(vec!["https://denotarius.io".parse().unwrap()])
     };
 
     origins
+}
+
+pub fn iso8601(st: &std::time::SystemTime) -> String {
+    let dt: DateTime<Utc> = st.clone().into();
+    format!("{}", dt.format("%+"))
 }
