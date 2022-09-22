@@ -32,4 +32,4 @@ export const PUBLIC_KEY: string = config.PUBLIC_KEY;
 export const IS_TESTNET = config.IS_TESTNET === 'true' ? true : false;
 export const BLOCKFROST_MAINNET_TOKEN = config.BLOCKFROST_MAINNET_TOKEN;
 export const BLOCKFROST_IPFS_TOKEN = config.BLOCKFROST_IPFS_TOKEN;
-export const BLOCKFROST_MAINNET = 'https://cardano-testnet.blockfrost.io/api/v0';
+export const BLOCKFROST_MAINNET_URL = 'https://cardano-testnet.blockfrost.io/api/v0';
