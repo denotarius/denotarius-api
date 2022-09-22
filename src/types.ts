@@ -18,3 +18,14 @@ export type Batch = {
 };
 
 export type Status = 'paid' | 'unpaid' | 'expired';
+
+export interface AddressBlockfrostResponse {
+  address: string;
+  amount: {
+    unit: string;
+    quantity: string;
+  }[];
+  stake_address: string | null;
+  type: 'byron' | 'shelley';
+  script: boolean;
+}
