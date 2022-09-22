@@ -2,7 +2,7 @@ import moment from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
 
 import { AMOUNT_TO_PAY_IN_LOVELACES } from '../constants.ts';
 import { getActiveBatches, updateBatchStatus } from '../database.ts';
-import { getAddressBalance } from '../libs/blockfrost.ts';
+import { blockfrostClient } from '../libs/blockfrost.ts';
 
 export default async () => {
   const activebatches = getActiveBatches();
@@ -19,7 +19,7 @@ export default async () => {
     }
 
     // check payments
-    const addressBalance = await getAddressBalance(badge.address);
+    const addressBalance = await blockfrostClient.getAddressBalance(badge.address);
 
     if (addressBalance >= AMOUNT_TO_PAY_IN_LOVELACES) {
       updateBatchStatus(badge.uuid, 'paid');
