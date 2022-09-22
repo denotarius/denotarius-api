@@ -46,7 +46,7 @@ export const saveBatch = (input: AttestationSumbitInput) => {
   );
 
   db.query(
-    'INSERT INTO batch (uuid, created_at, status, amount, address, address_index, order_time_limit_in_seconds, pin_ipfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *',
+    'INSERT INTO batch (uuid, created_at, status, amount, address, address_index, order_time_limit_in_seconds, pin_ipfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [
       uuid,
       createdAt,

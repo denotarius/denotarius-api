@@ -9,7 +9,8 @@ export const getAddressBalance = async (address: string): Promise<number> => {
     },
   });
 
-  console.log('addressData', addressData);
-
-  return 5;
+  const result = await addressData.json();
+  // @ts-ignore
+  const lovelaceAmountItem = result.amount.find((amountItem) => amountItem.unit === 'lovelace');
+  return Number(lovelaceAmountItem.quantity);
 };

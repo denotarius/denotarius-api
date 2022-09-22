@@ -22,7 +22,7 @@ export default async () => {
     const addressBalance = await getAddressBalance(badge.address);
 
     if (addressBalance >= AMOUNT_TO_PAY_IN_LOVELACES) {
-      // is paid
+      updateBatchStatus(badge.uuid, 'paid');
     }
   }
 };
