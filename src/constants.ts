@@ -2,12 +2,15 @@ import { config as dotEnvConfig } from 'https://deno.land/x/dotenv@v1.0.1/mod.ts
 
 const config = dotEnvConfig({});
 
-if (!config.PUBLIC_KEY) {
-  throw Error('environment variable `PUBLIC_KEY` is not set');
+if (!config.MNEMONIC) {
+  throw Error('environment variable `MNEMONIC` is not set');
 }
 
-if (!config.BLOCKFROST_MAINNET_TOKEN) {
-  throw Error('environment variable `BLOCKFROST_MAINNET_TOKEN` is not set');
+if (!config.BLOCKFROST_PROJECT_ID) {
+  throw Error('environment variable `BLOCKFROST_PROJECT_ID` is not set');
+}
+if (!config.BLOCKFROST_NETWORK) {
+  throw Error('environment variable `BLOCKFROST_NETWORK` is not set');
 }
 
 if (!config.BLOCKFROST_IPFS_TOKEN) {
@@ -28,8 +31,8 @@ export const AMOUNT_TO_PAY_IN_LOVELACES = config.AMOUNT_TO_PAY_IN_LOVELACES
   : 1000000;
 
 export const ORDER_TIME_LIMIT_IN_SECONDS = 1800;
-export const PUBLIC_KEY: string = config.PUBLIC_KEY;
-export const IS_TESTNET = config.IS_TESTNET === 'true' ? true : false;
-export const BLOCKFROST_MAINNET_TOKEN = config.BLOCKFROST_MAINNET_TOKEN;
+export const MNEMONIC: string = config.MNEMONIC;
+export const IS_TESTNET = config.BLOCKFROST_NETWORK === 'mainnet' ? false : true;
+export const BLOCKFROST_PROJECT_ID = config.BLOCKFROST_PROJECT_ID;
+export const BLOCKFROST_NETWORK = config.BLOCKFROST_NETWORK;
 export const BLOCKFROST_IPFS_TOKEN = config.BLOCKFROST_IPFS_TOKEN;
-export const BLOCKFROST_MAINNET_URL = 'https://cardano-mainnet.blockfrost.io/api/v0';

@@ -1,10 +1,10 @@
+import { Core } from 'https://deno.land/x/lucid@0.6.0/mod.ts';
 import { DB } from 'https://deno.land/x/sqlite@v3.5.0/mod.ts';
 
 import {
   AMOUNT_TO_PAY_IN_LOVELACES,
   IS_TESTNET,
   ORDER_TIME_LIMIT_IN_SECONDS,
-  PUBLIC_KEY,
 } from './constants.ts';
 import { AttestationSumbitInput, Batch, Status } from './types.ts';
 import { deriveAddress, getDate } from './utils.ts';
@@ -35,12 +35,12 @@ export const initDb = () => {
   );
 };
 
-export const saveBatch = (input: AttestationSumbitInput) => {
+export const saveBatch = (input: AttestationSumbitInput, prvKey: Core.Bip32PrivateKey) => {
   const createdAt = getDate();
   const uuid = crypto.randomUUID();
   const addressIndex = getBatchesCount();
-  const address = deriveAddress(
-    PUBLIC_KEY,
+  const { address, signKey } = deriveAddress(
+    prvKey,
     addressIndex,
     IS_TESTNET,
   );
@@ -66,6 +66,7 @@ export const saveBatch = (input: AttestationSumbitInput) => {
       uuid,
     ]);
   }
+  return { address, metadata: input, signKey };
 };
 
 export const getBatch = (uuid: string) => {

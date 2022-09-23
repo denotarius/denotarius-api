@@ -7,6 +7,7 @@ import attestationSubmit from './routes/attestation_submit.ts';
 import root from './routes/root.ts';
 import status from './routes/status.ts';
 import checkBatches from './tasks/check_batches.ts';
+import { mnemonicToPrivateKey } from './tx-builder/mnemonic.ts';
 
 initDb();
 
