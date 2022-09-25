@@ -1,56 +1,93 @@
-import { serve } from 'https://deno.land/std@0.114.0/http/server.ts';
+import config from 'config';
+import * as dotenv from 'dotenv';
 
-import { ROUTES } from './constants.ts';
-import { initDb } from './database.ts';
-import attestation from './routes/attestation.ts';
-import attestationSubmit from './routes/attestation_submit.ts';
-import root from './routes/root.ts';
-import status from './routes/status.ts';
-import checkBatches from './tasks/check_batches.ts';
-import { mnemonicToPrivateKey } from './tx-builder/mnemonic.ts';
+import app from './app.ts';
+import { initDatabase } from './database.ts';
 
-initDb();
+dotenv.config();
 
-async function handler(req: Request): Promise<Response> {
-  const statusRouteMatch = ROUTES.STATUS_ROUTE.exec(req.url);
-  const rootRouteMatch = ROUTES.ROOT_ROUTE.exec(req.url);
-  const attestationSubmitRouteMatch = ROUTES.ATTESTATION_SUBMIT_ROUTE.exec(req.url);
-  const attestationOrderRouteMatch = ROUTES.ATTESTATION_ORDER_ROUTE.exec(req.url);
+initDatabase();
 
-  // routes
+const port = Number(config.get('server.port'));
+const debug: string = config.get('server.debug');
 
-  // /
-  if (rootRouteMatch) {
-    return root();
+const server = app({
+  logger: {
+    transport:
+      process.env.NODE_ENV === 'development' || debug
+        ? {
+            target: 'pino-pretty',
+            options: {
+              translateTime: 'HH:MM:ss Z',
+            },
+          }
+        : undefined,
+  },
+  ignoreTrailingSlash: true,
+});
+
+server.listen({ port }, error => {
+  if (error) {
+    console.log(error);
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(1);
   }
+});
 
-  // /status
-  if (statusRouteMatch) {
-    return status();
-  }
+// import { serve } from 'https://deno.land/std@0.114.0/http/server.ts';
 
-  // /attestation/submit
-  if (attestationSubmitRouteMatch) {
-    // TODO(@vladimirvolek) validate this json and return errors
-    const jsonData = await req.json();
-    return attestationSubmit(jsonData);
-  }
+// import { ROUTES } from './constants.ts';
+// import { initDatabase } from './database.ts';
+// import attestationSubmit from './routes/attestation-submit.ts';
+// import attestation from './routes/attestation.ts';
+// import root from './routes/root.ts';
+// import status from './routes/status.ts';
+// import checkBatches from './tasks/check-batches.ts';
 
-  // /attestation/:order_id
-  if (attestationOrderRouteMatch) {
-    const orderId = attestationOrderRouteMatch.pathname.groups['order_id'];
-    return attestation(orderId);
-  }
+// initDatabase();
 
-  return new Response('Not found', {
-    status: 404,
-  });
-}
+// async function handler(request: Request): Promise<Response> {
+//   const statusRouteMatch = ROUTES.STATUS_ROUTE.exec(request.url);
+//   const rootRouteMatch = ROUTES.ROOT_ROUTE.exec(request.url);
+//   const attestationSubmitRouteMatch = ROUTES.ATTESTATION_SUBMIT_ROUTE.exec(request.url);
+//   const attestationOrderRouteMatch = ROUTES.ATTESTATION_ORDER_ROUTE.exec(request.url);
 
-setInterval(() => {
-  checkBatches();
-}, 1000);
+//   // routes
 
-console.log('Listening on http://localhost:8000');
+//   // /
+//   if (rootRouteMatch) {
+//     return root();
+//   }
 
-serve(handler);
+//   // /status
+//   if (statusRouteMatch) {
+//     return status();
+//   }
+
+//   // /attestation/submit
+//   if (attestationSubmitRouteMatch) {
+//     // TODO(@vladimirvolek) validate this json and return errors
+//     const jsonData = await request.json();
+
+//     return attestationSubmit(jsonData);
+//   }
+
+//   // /attestation/:order_id
+//   if (attestationOrderRouteMatch) {
+//     const orderId = attestationOrderRouteMatch.pathname.groups['order_id'];
+
+//     return attestation(orderId);
+//   }
+
+//   return new Response('Not found', {
+//     status: 404,
+//   });
+// }
+
+// setInterval(() => {
+//   checkBatches();
+// }, 1000);
+
+// console.log('Listening on http://localhost:8000');
+
+// serve(handler);

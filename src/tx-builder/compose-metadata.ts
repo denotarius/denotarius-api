@@ -1,21 +1,23 @@
-import { C, Core } from 'https://deno.land/x/lucid@0.6.0/mod.ts';
+import {
+  encode_json_str_to_metadatum,
+  MetadataJsonSchema,
+  TransactionMetadatum,
+} from '@emurgo/cardano-serialization-lib-nodejs';
 
-export const composeMetadata = (
-  data: unknown,
-  metadataLabel: number,
-): Core.TransactionMetadatum => {
-  const obj = {
+export const composeMetadata = (data: unknown, metadataLabel: number): TransactionMetadatum => {
+  const object = {
     [metadataLabel]: data,
   };
 
   try {
-    const metadata = C.encode_json_str_to_metadatum(
-      JSON.stringify(obj),
-      C.MetadataJsonSchema.BasicConversions,
+    const metadata = encode_json_str_to_metadatum(
+      JSON.stringify(object),
+      MetadataJsonSchema.BasicConversions,
     );
+
     return metadata;
-  } catch (err) {
-    console.error(err);
-    throw Error('Failed to encode metadata.');
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to encode metadata.');
   }
 };

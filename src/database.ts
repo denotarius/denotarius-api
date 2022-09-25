@@ -9,10 +9,10 @@ import {
 import { AttestationSumbitInput, Batch, Status } from './types.ts';
 import { deriveAddress, getDate } from './utils.ts';
 
-const db = new DB('denotarius.db');
+const database = new DB('denotarius.db');
 
-export const initDb = () => {
-  db.execute(
+export const initDatabase = () => {
+  database.execute(
     `CREATE TABLE IF NOT EXISTS batch (
         uuid TEXT PRIMARY KEY,
         created_at TEXT NOT NULL,
@@ -25,7 +25,7 @@ export const initDb = () => {
       )`,
   );
 
-  db.execute(
+  database.execute(
     `CREATE TABLE IF NOT EXISTS document (
         ipfs_hash TEXT NOT NULL,
         metadata TEXT,
@@ -39,13 +39,9 @@ export const saveBatch = (input: AttestationSumbitInput, prvKey: Core.Bip32Priva
   const createdAt = getDate();
   const uuid = crypto.randomUUID();
   const addressIndex = getBatchesCount();
-  const { address, signKey } = deriveAddress(
-    prvKey,
-    addressIndex,
-    IS_TESTNET,
-  );
+  const { address, signKey } = deriveAddress(prvKey, addressIndex, IS_TESTNET);
 
-  db.query(
+  database.query(
     'INSERT INTO batch (uuid, created_at, status, amount, address, address_index, order_time_limit_in_seconds, pin_ipfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [
       uuid,
@@ -60,7 +56,7 @@ export const saveBatch = (input: AttestationSumbitInput, prvKey: Core.Bip32Priva
   );
 
   for (const row of input.ipfs) {
-    db.query('INSERT INTO document (ipfs_hash, metadata, uuid) VALUES (?, ?, ?)', [
+    database.query('INSERT INTO document (ipfs_hash, metadata, uuid) VALUES (?, ?, ?)', [
       row.cid,
       row.metadata,
       uuid,
@@ -70,37 +66,27 @@ export const saveBatch = (input: AttestationSumbitInput, prvKey: Core.Bip32Priva
 };
 
 export const getBatch = (uuid: string) => {
-  const rows = db.queryEntries(
-    'SELECT * FROM batch WHERE uuid = ?',
-    [uuid],
-  );
+  const rows = database.queryEntries('SELECT * FROM batch WHERE uuid = ?', [uuid]);
 
-  if (rows.length >= 1) {
+  if (rows.length > 0) {
     return rows[0];
   }
 
-  return null;
+  return;
 };
 
 export const updateBatchStatus = (id: string, status: Status) => {
-  db.query('UPDATE batch SET status = (?) where uuid = (?)', [
-    status,
-    id,
-  ]);
+  database.query('UPDATE batch SET status = (?) where uuid = (?)', [status, id]);
 };
 
 export const getBatchesCount = (): number => {
-  const rows = db.query<[number]>(
-    'SELECT count(*) FROM batch',
-  );
+  const rows = database.query<[number]>('SELECT count(*) FROM batch');
 
   return rows[0][0];
 };
 
 export const getActiveBatches = () => {
-  const rows = db.queryEntries<Batch>(
-    `SELECT * FROM batch where status = 'unpaid'`,
-  );
+  const rows = database.queryEntries<Batch>(`SELECT * FROM batch where status = 'unpaid'`);
 
   return rows;
 };

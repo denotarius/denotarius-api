@@ -1,18 +1,23 @@
-import { decodeString } from 'https://deno.land/std@0.63.0/encoding/hex.ts';
-import { C, Core } from 'https://deno.land/x/lucid@0.6.0/mod.ts';
+import {
+  BaseAddress,
+  Bip32PrivateKey,
+  NetworkInfo,
+  StakeCredential,
+} from '@emurgo/cardano-serialization-lib-nodejs';
 
 export const getDate = () => {
   const date = new Date();
+
   return date.toISOString();
 };
 
-const harden = (num: number): number => {
-  return 0x80000000 + num;
+const harden = (number_: number): number => {
+  return 0x80_00_00_00 + number_;
 };
 
 export const deriveAddress = (
   // accountPublicKey: string,
-  rootPrivKey: Core.Bip32PrivateKey,
+  rootPrivKey: Bip32PrivateKey,
   addressIndex: number,
   isTestnet: boolean,
 ) => {
@@ -32,21 +37,17 @@ export const deriveAddress = (
     .derive(0)
     .to_public();
 
-  const testnetNetwork = C.NetworkInfo.testnet();
-  const mainnetNetwork = C.NetworkInfo.mainnet();
+  const testnetNetwork = NetworkInfo.testnet();
+  const mainnetNetwork = NetworkInfo.mainnet();
   const networkId = isTestnet ? testnetNetwork.network_id() : mainnetNetwork.network_id();
 
   const utxoPubKeyHash = utxoKey.to_public().to_raw_key().hash();
   const stakeKeyHash = stakeKey.to_raw_key().hash();
-  const utxoStakeCred = C.StakeCredential.from_keyhash(utxoPubKeyHash);
-  const mainStakeCred = C.StakeCredential.from_keyhash(stakeKeyHash);
-  const baseAddress = C.BaseAddress.new(
-    networkId,
-    utxoStakeCred,
-    mainStakeCred,
-  );
+  const utxoStakeCred = StakeCredential.from_keyhash(utxoPubKeyHash);
+  const mainStakeCred = StakeCredential.from_keyhash(stakeKeyHash);
+  const baseAddress = BaseAddress.new(networkId, utxoStakeCred, mainStakeCred);
 
-  const addr = baseAddress.to_address().to_bech32(undefined);
+  const addr = baseAddress.to_address().to_bech32();
 
   return { signKey: utxoKey.to_raw_key(), address: addr };
 };

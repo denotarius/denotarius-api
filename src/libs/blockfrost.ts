@@ -1,5 +1,6 @@
+import { Responses } from '@blockfrost/blockfrost-js';
+
 import { BLOCKFROST_NETWORK, BLOCKFROST_PROJECT_ID } from '../constants.ts';
-import { AddressBlockfrostResponse, UTXO } from '../types.ts';
 
 export class BlockfrostClient {
   projectId: string;
@@ -22,26 +23,21 @@ export class BlockfrostClient {
 
   private fetch = async (path: string, init?: Partial<RequestInit>) => {
     const url = `${this.baseUrl}${path}`;
-    const res = await fetch(
-      url,
-      {
-        headers: {
-          project_id: this.projectId,
-        },
-        ...init,
+    const response = await fetch(url, {
+      headers: {
+        project_id: this.projectId,
       },
-    );
+      ...init,
+    });
 
-    return res.json();
+    return response.json();
   };
 
   getAddressBalance = async (address: string): Promise<number> => {
-    const addressData = await this.fetch(
-      `/addresses/${address}`,
-    );
+    const addressData = await this.fetch(`/addresses/${address}`);
 
-    const result: AddressBlockfrostResponse = addressData;
-    const lovelaceAmountItem = result.amount.find((amountItem) => amountItem.unit === 'lovelace');
+    const result: Responses['address_content'] = addressData;
+    const lovelaceAmountItem = result.amount.find(amountItem => amountItem.unit === 'lovelace');
 
     if (lovelaceAmountItem) {
       // TODO(@vladimirvolek)) bignumber
@@ -51,25 +47,20 @@ export class BlockfrostClient {
     return 0;
   };
 
-  getAddressUtxos = async (address: string): Promise<UTXO[]> => {
-    const res = await this.fetch(
-      `/addresses/${address}/utxos`,
-    );
+  getAddressUtxos = async (address: string): Promise<Responses['address_utxo_content']> => {
+    const response = await this.fetch(`/addresses/${address}/utxos`);
 
-    return res;
+    return response;
   };
 
-  submitTx = async (tx: Uint8Array): Promise<UTXO[]> => {
-    const res = await this.fetch(
-      `/tx/submit`,
-      {
-        method: 'POST',
-        body: tx,
-        headers: { project_id: this.projectId, 'Content-type': 'application/cbor' },
-      },
-    );
+  submitTx = async (tx: Uint8Array): Promise<Responses['address_utxo_content']> => {
+    const response = await this.fetch(`/tx/submit`, {
+      method: 'POST',
+      body: tx,
+      headers: { project_id: this.projectId, 'Content-type': 'application/cbor' },
+    });
 
-    return res;
+    return response;
   };
 }
 
