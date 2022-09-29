@@ -1,0 +1,13 @@
+{
+  "db": {
+    "connectionString": "postgres://vladko:@localhost:5432/postgres",
+    "maxConnections": 2,
+    "connectionTimeoutMs": 3000,
+    "idleTimeoutMs": 10000,
+    "ssl": false
+  },
+  "blockfrost": {
+    "api_key": "mainnetTx0zzQFPRzCh5bkmQ3xxE7D4lZriU9Av",
+    "ipfs_key": ""
+  }
+}

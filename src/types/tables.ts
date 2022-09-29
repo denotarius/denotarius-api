@@ -1,10 +1,4 @@
-export interface AttestationSumbitInput {
-  ipfs: {
-    cid: string;
-    metadata?: string;
-  }[];
-  pin_ipfs: boolean;
-}
+import { Status } from './common.js';
 
 export type Batch = {
   uuid: string;
@@ -17,4 +11,6 @@ export type Batch = {
   pin_ipfs: boolean;
 };
 
-export type Status = 'paid' | 'unpaid' | 'expired';
+export interface Document {
+  a: string;
+}

@@ -1,47 +1,13 @@
-import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { fastifyAutoload } from '@fastify/autoload';
+import fastify, { FastifyInstance } from 'fastify';
+import path from 'path';
 
 const start = (options = {}): FastifyInstance => {
   const app = fastify(options);
 
-  app.route({
-    method: 'GET',
-    url: '/',
-    handler: (_request: FastifyRequest, reply: FastifyReply) => {
-      reply.send({
-        status: 'https://denotarius.io/',
-      });
-    },
-  });
-
-  app.route({
-    method: 'GET',
-    url: '/status',
-    handler: (_request: FastifyRequest, reply: FastifyReply) => {
-      reply.send({
-        healthy: true,
-        version: `${packageJson.version}`,
-      });
-    },
-  });
-
-  app.route({
-    method: 'GET',
-    url: '/attestation/submit',
-    handler: (_request: FastifyRequest, reply: FastifyReply) => {
-      reply.send({
-        healthy: true,
-      });
-    },
-  });
-
-  app.route({
-    method: 'GET',
-    url: '/attestation/:order_id',
-    handler: (_request: FastifyRequest, reply: FastifyReply) => {
-      reply.send({
-        healthy: true,
-      });
-    },
+  app.register(fastifyAutoload, {
+    dir: path.join(__dirname, 'routes'),
+    dirNameRoutePrefix: false,
   });
 
   process.on('SIGINT', () => {

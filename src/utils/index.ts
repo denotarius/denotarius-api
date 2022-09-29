@@ -3,8 +3,14 @@ import {
   Address,
   AuxiliaryData,
   BigNum,
+  Bip32PrivateKey,
+  encode_json_str_to_metadatum,
   hash_transaction,
   LinearFee,
+  make_vkey_witness,
+  MetadataJsonSchema,
+  PrivateKey,
+  Transaction,
   TransactionBody,
   TransactionBuilder,
   TransactionBuilderConfigBuilder,
@@ -14,15 +20,63 @@ import {
   TransactionOutput,
   TransactionUnspentOutput,
   TransactionUnspentOutputs,
+  TransactionWitnessSet,
   Value,
+  Vkeywitnesses,
 } from '@emurgo/cardano-serialization-lib-nodejs';
+import { mnemonicToEntropy } from 'bip39';
 
-export const CARDANO_PARAMS = {
-  // COINS_PER_UTXO_WORD: '34482',
-  COINS_PER_UTXO_BYTE: '4310',
-  MAX_TX_SIZE: 16_384,
-  MAX_VALUE_SIZE: 5000,
-} as const;
+import constants from '../constants.js';
+
+export const getDate = () => {
+  const date = new Date();
+
+  return date.toISOString();
+};
+
+export const composeMetadata = (data: unknown, metadataLabel: number): TransactionMetadatum => {
+  const object = {
+    [metadataLabel]: data,
+  };
+
+  try {
+    const metadata = encode_json_str_to_metadatum(
+      JSON.stringify(object),
+      MetadataJsonSchema.BasicConversions,
+    );
+
+    return metadata;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to encode metadata.');
+  }
+};
+
+export const mnemonicToPrivateKey = (mnemonic: string): Bip32PrivateKey => {
+  const entropy = mnemonicToEntropy(mnemonic);
+
+  const rootKey = Bip32PrivateKey.from_bip39_entropy(decodeString(entropy), decodeString(''));
+
+  return rootKey;
+};
+
+export const signTransaction = (
+  txBody: TransactionBody,
+  txMetadata: AuxiliaryData,
+  signKey: PrivateKey,
+): Transaction => {
+  const txHash = hash_transaction(txBody);
+  const witnesses = TransactionWitnessSet.new();
+  const vkeyWitnesses = Vkeywitnesses.new();
+
+  vkeyWitnesses.add(make_vkey_witness(txHash, signKey));
+  witnesses.set_vkeys(vkeyWitnesses);
+
+  // create the finalized transaction with witnesses
+  const transaction = Transaction.new(txBody, witnesses, txMetadata);
+
+  return transaction;
+};
 
 export const composeTransaction = (
   address: string,
@@ -45,9 +99,9 @@ export const composeTransaction = (
       .fee_algo(LinearFee.new(BigNum.from_str('44'), BigNum.from_str('155381')))
       .pool_deposit(BigNum.from_str('500000000'))
       .key_deposit(BigNum.from_str('2000000'))
-      .coins_per_utxo_byte(BigNum.from_str(CARDANO_PARAMS.COINS_PER_UTXO_BYTE))
-      .max_value_size(CARDANO_PARAMS.MAX_VALUE_SIZE)
-      .max_tx_size(CARDANO_PARAMS.MAX_TX_SIZE)
+      .coins_per_utxo_byte(BigNum.from_str(constants.cardano.coinPerUtxoSize.toString()))
+      .max_value_size(constants.cardano.maxValueSize)
+      .max_tx_size(constants.cardano.maxTxSize)
       .build(),
   );
 
