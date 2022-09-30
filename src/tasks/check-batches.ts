@@ -26,6 +26,10 @@ export default async () => {
     }
 
     if (addressBalance >= constants.amountToPayInLovelaces) {
+      if (batch.pin_ipfs) {
+        console.log('pin');
+      }
+
       await store.updateBatchStatus(batch.uuid, 'paid');
     }
   }

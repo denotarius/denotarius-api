@@ -11,6 +11,9 @@ export type Batch = {
   pin_ipfs: boolean;
 };
 
-export interface Document {
-  a: string;
+export interface Doc {
+  id?: number;
+  ipfs_hash: string;
+  metadata?: string;
+  uuid: string;
 }
