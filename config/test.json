@@ -1,13 +1,19 @@
 {
+  "server": {
+    "port": 3000,
+    "debug": false
+  },
   "db": {
-    "connectionString": "postgres://vladko:@localhost:5432/postgres",
+    "connectionString": "postgresql://localhost/postgres",
     "maxConnections": 2,
     "connectionTimeoutMs": 3000,
     "idleTimeoutMs": 10000,
     "ssl": false
   },
   "blockfrost": {
-    "api_key": "mainnetTx0zzQFPRzCh5bkmQ3xxE7D4lZriU9Av",
-    "ipfs_key": ""
-  }
+    "apiKey": "mainnetTx0zzQFPRzCh5bkmQ3xxE7D4lZriU9Av",
+    "ipfsKey": "ipfsqwMez5XOuDzzio6ZQkpSjApKe4RpAwfi"
+  },
+  "amountToPayInLovelaces": 100000000,
+  "mnemonic": "all all all all all all all all all all all all"
 }

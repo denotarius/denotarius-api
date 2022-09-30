@@ -1,10 +1,7 @@
 import config from 'config';
-import * as dotenv from 'dotenv';
-
 import app from './app.js';
 import { store } from './services/database.js';
 
-dotenv.config();
 await store.init();
 
 const port = Number(config.get('server.port'));

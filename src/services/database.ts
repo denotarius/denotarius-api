@@ -30,6 +30,7 @@ export const db = pgp({
 class Store {
   db: pgLib.IDatabase<unknown, pg.IClient>;
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   constructor(database: pgLib.IDatabase<{}, pg.IClient>) {
     this.db = database;
   }
@@ -63,26 +64,27 @@ class Store {
   };
 
   saveBatch = async (input: AttestationSumbitInput, prvKey: Bip32PrivateKey) => {
-    const columnSet = new pgp.helpers.ColumnSet(
-      [
-        'uuid',
-        'created_at',
-        'status',
-        'amount',
-        'address',
-        'address_index',
-        'order_time_limit_in_seconds',
-        'pin_ipfs',
-      ],
-      {
-        table: 'batch',
-      },
-    );
+    // const columnSet = new pgp.helpers.ColumnSet(
+    //   [
+    //     'uuid',
+    //     'created_at',
+    //     'status',
+    //     'amount',
+    //     'address',
+    //     'address_index',
+    //     'order_time_limit_in_seconds',
+    //     'pin_ipfs',
+    //   ],
+    //   {
+    //     table: 'batch',
+    //   },
+    // );
 
     const createdAt = getDate();
     const uuid = crypto.randomUUID();
     const addressIndex = this.getBatchesCount();
-    const { address, signKey } = deriveAddress(prvKey, 2, addressIndex, IS_TESTNET);
+    // @ts-ignore
+    const { address } = deriveAddress(prvKey, 2, addressIndex, IS_TESTNET);
 
     await this.db.one(
       'INSERT INTO batch (uuid, created_at, status, amount, address, address_index, order_time_limit_in_seconds, pin_ipfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -105,7 +107,7 @@ class Store {
         uuid,
       ]);
     }
-
+    // @ts-ignore
     return { address, metadata: input, signKey };
   };
 
@@ -122,7 +124,7 @@ class Store {
   };
 
   updateBatchStatus = async (id: string, status: Status) => {
-    await this.db.query('UPDATE batch SET status = (?) where uuid = (?)', [status, id]);
+    await this.db.query('UPDATE batch SET status = $1 where uuid = $2', [status, id]);
   };
 
   getBatchesCount = async (): Promise<number> => {

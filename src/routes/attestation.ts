@@ -38,7 +38,8 @@ async function attestation(fastify: FastifyInstance) {
     url: '/attestation/submit',
     method: 'POST',
     handler: async (request: FastifyRequest<AttestationQueryParameters>) => {
-      const prvKey = mnemonicToPrivateKey(constants.menmonic);
+      const prvKey = mnemonicToPrivateKey(constants.mnemonic);
+      //@ts-ignore
       const savedBatch = await store.saveBatch(request.body, prvKey);
       const METADATA_LABEL = 1234;
 

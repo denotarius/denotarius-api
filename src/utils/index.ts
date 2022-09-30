@@ -54,7 +54,7 @@ export const composeMetadata = (data: unknown, metadataLabel: number): Transacti
 
 export const mnemonicToPrivateKey = (mnemonic: string): Bip32PrivateKey => {
   const entropy = mnemonicToEntropy(mnemonic);
-
+  // @ts-ignore
   const rootKey = Bip32PrivateKey.from_bip39_entropy(decodeString(entropy), decodeString(''));
 
   return rootKey;
@@ -143,11 +143,13 @@ export const composeTransaction = (
 
     const input = TransactionInput.new(
       TransactionHash.from_hex(utxo.tx_hash),
+      // @ts-ignore
       BigNum.from_str(utxo.output_index.toString()),
     );
     const output = TransactionOutput.new(changeAddr, inputValue);
 
     unspentOutputs.add(TransactionUnspentOutput.new(input, output));
+    // @ts-ignore
     txBuilder.add_input(TransactionUnspentOutput.new(input, output));
     utxoValue = utxoValue.checked_add(BigNum.from_str(amount.toString()));
   }

@@ -1,21 +1,17 @@
 import config from 'config';
 import { readFileSync } from 'fs';
 
-if (!config.has('MNEMONIC')) {
-  throw new Error('environment variable `MNEMONIC` is not set');
+if (!config.has('mnemonic')) {
+  throw new Error('config variable `mnemonic` is not set');
 }
 
-if (!config.has('BLOCKFROST_API_KEY')) {
-  throw new Error('environment variable `BLOCKFROST_API_KEY` is not set');
+if (!config.has('blockfrost.apiKey')) {
+  throw new Error('config variable `blockfrost.apiKey` is not set');
 }
 
-if (!config.has('BLOCKFROST_IPFS_TOKEN')) {
-  throw new Error('environment variable `BLOCKFROST_IPFS_TOKEN` is not set');
+if (!config.has('blockfrost.ipfsKey')) {
+  throw new Error('config variable `blockfrost.ipfsKey` is not set');
 }
-
-const amountToPayInLovelaces = config.get('AMOUNT_TO_PAY_IN_LOVELACES')
-  ? Number(config.get('AMOUNT_TO_PAY_IN_LOVELACES'))
-  : 1_000_000;
 
 let pgConnectionString = '';
 
@@ -44,13 +40,15 @@ const pgSsl: boolean | Record<string, unknown> = config.has('db.ssl')
     };
 
 export default {
-  blockforst: {
-    apiKey: config.get<string>('BLOCKFROST_API_KEY'),
-    ipfsKey: config.get<string>('BLOCKFROST_IPFS_TOKEN'),
+  blockfrost: {
+    apiKey: config.get<string>('blockfrost.apiKey'),
+    ipfsKey: config.get<string>('blockfrost.ipfsKey'),
   },
   orderLimitInSeconds: 1800,
-  amountToPayInLovelaces,
-  menmonic: config.get<string>('MNEMONIC'),
+  amountToPayInLovelaces: config.get('amountToPayInLovelaces')
+    ? Number(config.get('amountToPayInLovelaces'))
+    : 1_000_000,
+  mnemonic: config.get<string>('mnemonic'),
   db: {
     pgConnectionString,
     pgMaxConnections,
