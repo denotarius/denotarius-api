@@ -3,7 +3,6 @@ import {
   Address,
   AuxiliaryData,
   BigNum,
-  Bip32PrivateKey,
   encode_json_str_to_metadatum,
   hash_transaction,
   LinearFee,
@@ -24,15 +23,8 @@ import {
   Value,
   Vkeywitnesses,
 } from '@emurgo/cardano-serialization-lib-nodejs';
-import { mnemonicToEntropy } from 'bip39';
 
 import constants from '../constants.js';
-
-export const getDate = () => {
-  const date = new Date();
-
-  return date.toISOString();
-};
 
 export const composeMetadata = (data: unknown, metadataLabel: number): TransactionMetadatum => {
   const object = {
@@ -50,13 +42,6 @@ export const composeMetadata = (data: unknown, metadataLabel: number): Transacti
     console.error(error);
     throw new Error('Failed to encode metadata.');
   }
-};
-
-export const mnemonicToPrivateKey = (mnemonic: string): Bip32PrivateKey => {
-  const entropy = mnemonicToEntropy(mnemonic);
-  const rootKey = Bip32PrivateKey.from_bip39_entropy(Buffer.from(entropy, 'hex'), Buffer.from(''));
-
-  return rootKey;
 };
 
 export const signTransaction = (
@@ -175,8 +160,4 @@ export const composeTransaction = (
     txBody,
     txMetadata,
   };
-};
-
-export const harden = (num: number): number => {
-  return 0x80000000 + num;
 };

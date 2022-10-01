@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest } from 'fastify';
 import constants from '../constants.js';
 import { store } from '../services/database.js';
 import { AttestationQueryParameters } from '../types/routes.js';
-import { mnemonicToPrivateKey } from '../utils/index.js';
+import { mnemonicToPrivateKey } from '../utils/keys.js';
 import { parseBatch } from '../utils/routes.js';
 
 async function attestation(fastify: FastifyInstance) {

@@ -3,7 +3,7 @@ import moment from 'moment';
 import constants from '../constants.js';
 import { blockfrostClient } from '../services/blockfrost.js';
 import { store } from '../services/database.js';
-import { composeMetadata, composeTransaction, signTransaction } from '../utils/index.js';
+import { composeMetadata, composeTransaction, signTransaction } from '../utils/tx.js';
 
 export default async () => {
   const activebatches = await store.getActiveBatches();
