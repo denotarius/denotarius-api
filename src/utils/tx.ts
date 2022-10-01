@@ -127,13 +127,13 @@ export const composeTransaction = (
 
     const input = TransactionInput.new(
       TransactionHash.from_hex(utxo.tx_hash),
-      //@ts-ignore
+      //@ts-expect-error TODO check this
       BigNum.from_str(utxo.output_index.toString()),
     );
     const output = TransactionOutput.new(changeAddr, inputValue);
 
     unspentOutputs.add(TransactionUnspentOutput.new(input, output));
-    //@ts-ignore
+    //@ts-expect-error TODO check this
     txBuilder.add_input(TransactionUnspentOutput.new(input, output));
     utxoValue = utxoValue.checked_add(BigNum.from_str(amount.toString()));
   }

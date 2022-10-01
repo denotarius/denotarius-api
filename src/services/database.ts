@@ -1,15 +1,11 @@
-import { deriveAddress } from '@blockfrost/blockfrost-js';
 import pgLib from 'pg-promise';
 import crypto from 'crypto';
 import pg from 'pg-promise/typescript/pg-subset.js';
 import constants from '../constants.js';
 import { AttestationSumbitInput } from '../types/routes.js';
 import { getDate } from '../utils/common.js';
-import { harden } from '../utils/keys.js';
 import type { Batch, Doc } from '../types/tables';
 import type { Status } from '../types/common';
-import { Bip32PrivateKey } from '@emurgo/cardano-serialization-lib-nodejs';
-import { blockfrostClient } from './blockfrost.js';
 
 export const pgp = pgLib({});
 
@@ -67,7 +63,7 @@ class Store {
     );
   };
 
-  saveBatch = async (input: AttestationSumbitInput, privateKey: Bip32PrivateKey) => {
+  saveBatch = async (input: AttestationSumbitInput, addressIndex: number, address: string) => {
     const documentColumns = new pgp.helpers.ColumnSet(
       ['batch_id', 'uuid', 'metadata', 'ipfs_hash'],
       {
@@ -91,27 +87,13 @@ class Store {
       },
     );
     const batchUuid = crypto.randomUUID();
-    const createdAt = getDate();
-    const addressIndex = await this.getBatchesCount();
-    const accountKey = privateKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0));
-    const utxoKey = accountKey
-      .derive(0) // external
-      .derive(addressIndex);
-    const xpub = Buffer.from(accountKey.to_public().as_bytes()).toString('hex');
-    const { address } = deriveAddress(
-      xpub,
-      1,
-      addressIndex,
-      blockfrostClient.api.projectId?.includes('testnet') || false,
-    );
-
     const batchColumnSet = batchColumns;
     const insertBatchQuery =
       pgp.helpers.insert(
         [
           {
             uuid: batchUuid,
-            created_at: createdAt,
+            created_at: getDate(),
             status: 'unpaid',
             amount: constants.amountToPayInLovelaces,
             address: address,
@@ -143,7 +125,6 @@ class Store {
       batchUuid,
       address,
       metadata: input,
-      signKey: utxoKey.to_raw_key(),
     };
   };
 

@@ -1,1 +1,1 @@
-export type Status = 'paid' | 'unpaid' | 'expired';
+export type Status = 'paid' | 'unpaid' | 'expired' | 'error';

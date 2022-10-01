@@ -11,3 +11,15 @@ export const mnemonicToPrivateKey = (mnemonic: string): Bip32PrivateKey => {
 
   return rootKey;
 };
+
+export const getAccountKey = (privateKey: Bip32PrivateKey) => {
+  return privateKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0));
+};
+
+export const getUtxoKey = (accountKey: Bip32PrivateKey, addressIndex: number) => {
+  return accountKey.derive(0).derive(addressIndex);
+};
+
+export const getXpub = (accountKey: Bip32PrivateKey) => {
+  return Buffer.from(accountKey.to_public().as_bytes()).toString('hex');
+};

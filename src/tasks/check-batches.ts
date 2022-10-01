@@ -4,6 +4,7 @@ import constants from '../constants.js';
 import { blockfrostClient } from '../services/blockfrost.js';
 import { store } from '../services/database.js';
 import { composeMetadata, composeTransaction, signTransaction } from '../utils/tx.js';
+import { getAccountKey, getUtxoKey, mnemonicToPrivateKey } from '../utils/keys.js';
 
 export default async () => {
   const activebatches = await store.getActiveBatches();
@@ -45,7 +46,7 @@ export default async () => {
       const utxos = await blockfrostClient.getAddressUtxos(batch.address);
 
       if (utxos.length === 0) {
-        throw new Error('No utxo found!');
+        await store.updateBatchStatus(batch.uuid, 'error');
       }
 
       const { txBody, txMetadata } = composeTransaction(
@@ -55,8 +56,10 @@ export default async () => {
         utxos,
       );
 
-      // @ts-ignore
-      const transaction = signTransaction(txBody, txMetadata, savedBatch.signKey);
+      const privateKey = mnemonicToPrivateKey(constants.mnemonic);
+      const accountKey = getAccountKey(privateKey);
+      const signKey = getUtxoKey(accountKey, batch.address_index);
+      const transaction = signTransaction(txBody, txMetadata, signKey.to_raw_key());
 
       await blockfrostClient.submitTx(transaction.to_bytes());
 
