@@ -2,15 +2,15 @@ import { deriveAddress } from '@blockfrost/blockfrost-js';
 import pgLib from 'pg-promise';
 import crypto from 'crypto';
 import pg from 'pg-promise/typescript/pg-subset.js';
-
 import constants from '../constants.js';
 import { AttestationSumbitInput } from '../types/routes.js';
 import { getDate } from '../utils/index.js';
-
 import type { Batch, Doc } from '../types/tables';
 import type { Status } from '../types/common';
+import { Bip32PrivateKey } from '@emurgo/cardano-serialization-lib-nodejs';
+import { blockfrostClient } from './blockfrost.js';
 
-const pgp = pgLib({});
+export const pgp = pgLib({});
 
 export const db = pgp({
   connectionString: constants.db.pgConnectionString,
@@ -65,8 +65,12 @@ class Store {
     );
   };
 
-  saveBatch = async (input: AttestationSumbitInput, prvKey: string) => {
-    const batchColumnSet = new pgp.helpers.ColumnSet(
+  saveBatch = async (input: AttestationSumbitInput, prvKey: Bip32PrivateKey) => {
+    const documentColumns = new pgp.helpers.ColumnSet(['id', 'uuid', 'metadata', 'ipfs_hash'], {
+      table: 'document',
+    });
+
+    const batchColumns = new pgp.helpers.ColumnSet(
       [
         'id',
         'uuid',
@@ -86,9 +90,14 @@ class Store {
     const createdAt = getDate();
     const uuid = crypto.randomUUID();
     const addressIndex = await this.getBatchesCount();
-    // TODO: handle testnet here
-    const { address } = deriveAddress(prvKey, 2, addressIndex, false);
+    const { address } = deriveAddress(
+      prvKey.to_bech32(),
+      2,
+      addressIndex,
+      blockfrostClient.api.projectId?.includes('testnet') || false,
+    );
 
+    const batchColumnSet = batchColumns;
     const insertBatchQuery =
       pgp.helpers.insert(
         [
@@ -107,11 +116,7 @@ class Store {
       ) + ' RETURNING *';
 
     const insertedBatch = await this.db.one<Batch>(insertBatchQuery);
-
-    const documentColumnSet = new pgp.helpers.ColumnSet(['id', 'uuid', 'metadata', 'ipfs_hash'], {
-      table: 'document',
-    });
-
+    const documentColumnSet = documentColumns;
     const documents: Doc[] = [];
 
     for (const row of input.ipfs) {
@@ -126,7 +131,7 @@ class Store {
     const insertDocQuery = pgp.helpers.insert(documents, documentColumnSet);
     await this.db.none(insertDocQuery);
 
-    return { address, metadata: input };
+    return { address, metadata: input, prvKey };
   };
 
   getBatch = async (orderId: string): Promise<Batch | null> => {
