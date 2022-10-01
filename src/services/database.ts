@@ -4,15 +4,11 @@ import crypto from 'crypto';
 import pg from 'pg-promise/typescript/pg-subset.js';
 import constants from '../constants.js';
 import { AttestationSumbitInput } from '../types/routes.js';
-import { getDate } from '../utils/index.js';
+import { getDate, harden } from '../utils/index.js';
 import type { Batch, Doc } from '../types/tables';
 import type { Status } from '../types/common';
 import { Bip32PrivateKey } from '@emurgo/cardano-serialization-lib-nodejs';
 import { blockfrostClient } from './blockfrost.js';
-
-const harden = (num: number): number => {
-  return 0x80000000 + num;
-};
 
 export const pgp = pgLib({});
 
@@ -96,14 +92,11 @@ class Store {
 
     const createdAt = getDate();
     const addressIndex = await this.getBatchesCount();
-    const accountKey = privateKey
-      .derive(harden(1852))
-      .derive(harden(1815))
-      .derive(harden(0))
-      .to_public()
-      .as_bytes();
-
-    const xpub = Buffer.from(accountKey).toString('hex');
+    const accountKey = privateKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0));
+    const utxoKey = accountKey
+      .derive(0) // external
+      .derive(addressIndex);
+    const xpub = Buffer.from(accountKey.to_public().as_bytes()).toString('hex');
     const { address } = deriveAddress(
       xpub,
       1,
@@ -145,7 +138,11 @@ class Store {
     const insertDocQuery = pgp.helpers.insert(documents, documentColumnSet);
     await this.db.none(insertDocQuery);
 
-    return { address, metadata: input, signKey: privateKey };
+    return {
+      address,
+      metadata: input,
+      signKey: utxoKey.to_raw_key(),
+    };
   };
 
   getBatch = async (orderId: string): Promise<Batch | null> => {

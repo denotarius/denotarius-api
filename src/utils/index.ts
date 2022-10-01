@@ -176,3 +176,7 @@ export const composeTransaction = (
     txMetadata,
   };
 };
+
+export const harden = (num: number): number => {
+  return 0x80000000 + num;
+};
