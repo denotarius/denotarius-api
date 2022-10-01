@@ -147,6 +147,12 @@ class Store {
 
     return row;
   };
+
+  getDocumentsForBatch = async (uuid: string) => {
+    const row = await this.db.many<Doc>('SELECT * FROM document where uuid = $1', [uuid]);
+
+    return row;
+  };
 }
 
 export const store = new Store(db);

@@ -26,8 +26,13 @@ export default async () => {
     }
 
     if (addressBalance >= constants.amountToPayInLovelaces) {
+      // pin ipfs hashes after payment
       if (batch.pin_ipfs) {
-        console.log('pin');
+        const documents = await store.getDocumentsForBatch(batch.uuid);
+
+        for (const doc of documents) {
+          await blockfrostClient.pin(doc.ipfs_hash);
+        }
       }
 
       await store.updateBatchStatus(batch.uuid, 'paid');
