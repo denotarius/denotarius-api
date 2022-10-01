@@ -61,22 +61,25 @@ class Store {
     await this.db.query(
       `CREATE TABLE IF NOT EXISTS document (
           id SERIAL PRIMARY KEY,
+          batch_id INT NOT NULL,
           ipfs_hash VARCHAR NOT NULL,
           metadata TEXT,
           uuid VARCHAR NOT NULL UNIQUE, 
-          FOREIGN KEY(id) REFERENCES batch(id)
+          FOREIGN KEY(batch_id) REFERENCES batch(id)
         )`,
     );
   };
 
   saveBatch = async (input: AttestationSumbitInput, privateKey: Bip32PrivateKey) => {
-    const documentColumns = new pgp.helpers.ColumnSet(['id', 'uuid', 'metadata', 'ipfs_hash'], {
-      table: 'document',
-    });
+    const documentColumns = new pgp.helpers.ColumnSet(
+      ['batch_id', 'uuid', 'metadata', 'ipfs_hash'],
+      {
+        table: 'document',
+      },
+    );
 
     const batchColumns = new pgp.helpers.ColumnSet(
       [
-        'id',
         'uuid',
         'created_at',
         'status',
@@ -92,7 +95,6 @@ class Store {
     );
 
     const createdAt = getDate();
-    const uuid = crypto.randomUUID();
     const addressIndex = await this.getBatchesCount();
     const accountKey = privateKey
       .derive(harden(1852))
@@ -104,7 +106,7 @@ class Store {
     const xpub = Buffer.from(accountKey).toString('hex');
     const { address } = deriveAddress(
       xpub,
-      2,
+      1,
       addressIndex,
       blockfrostClient.api.projectId?.includes('testnet') || false,
     );
@@ -114,7 +116,7 @@ class Store {
       pgp.helpers.insert(
         [
           {
-            uuid: uuid,
+            uuid: crypto.randomUUID(),
             created_at: createdAt,
             status: 'unpaid',
             amount: constants.amountToPayInLovelaces,
@@ -133,8 +135,8 @@ class Store {
 
     for (const row of input.ipfs) {
       documents.push({
-        id: insertedBatch.id,
-        uuid: uuid,
+        batch_id: insertedBatch.id,
+        uuid: crypto.randomUUID(),
         metadata: row.metadata,
         ipfs_hash: row.cid,
       });
@@ -163,13 +165,13 @@ class Store {
   };
 
   getBatchesCount = async (): Promise<number> => {
-    const row = await this.db.one<number>('SELECT count(*) FROM batch');
+    const row = await this.db.one<{ count: number }>('SELECT count(*) FROM batch');
 
-    return row;
+    return row.count;
   };
 
-  getDocumentsForBatch = async (uuid: string) => {
-    const row = await this.db.many<Doc>('SELECT * FROM document where uuid = $1', [uuid]);
+  getDocumentsForBatch = async (id: string) => {
+    const row = await this.db.many<Doc>('SELECT * FROM document where id = $1', [id]);
 
     return row;
   };

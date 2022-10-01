@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
-
 import constants from '../constants.js';
 import { blockfrostClient } from '../services/blockfrost.js';
 import { store } from '../services/database.js';

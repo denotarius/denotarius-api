@@ -14,6 +14,7 @@ export type Batch = {
 
 export interface Doc {
   id?: number;
+  batch_id: number;
   ipfs_hash: string;
   metadata?: string;
   uuid: string;
