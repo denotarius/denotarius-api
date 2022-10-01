@@ -89,7 +89,7 @@ class Store {
         table: 'batch',
       },
     );
-
+    const batchUuid = crypto.randomUUID();
     const createdAt = getDate();
     const addressIndex = await this.getBatchesCount();
     const accountKey = privateKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0));
@@ -109,7 +109,7 @@ class Store {
       pgp.helpers.insert(
         [
           {
-            uuid: crypto.randomUUID(),
+            uuid: batchUuid,
             created_at: createdAt,
             status: 'unpaid',
             amount: constants.amountToPayInLovelaces,
@@ -139,6 +139,7 @@ class Store {
     await this.db.none(insertDocQuery);
 
     return {
+      batchUuid,
       address,
       metadata: input,
       signKey: utxoKey.to_raw_key(),

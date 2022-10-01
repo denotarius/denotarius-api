@@ -1,32 +1,20 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import constants from '../constants.js';
-import { blockfrostClient } from '../services/blockfrost.js';
 import { store } from '../services/database.js';
 import { AttestationQueryParameters } from '../types/routes.js';
-import {
-  composeMetadata,
-  composeTransaction,
-  mnemonicToPrivateKey,
-  signTransaction,
-} from '../utils/index.js';
+import { mnemonicToPrivateKey } from '../utils/index.js';
+import { parseBatch } from '../utils/routes.js';
 
 async function attestation(fastify: FastifyInstance) {
   fastify.route({
     url: '/attestation/:order_id',
     method: 'GET',
     handler: async (request: FastifyRequest<AttestationQueryParameters>, reply) => {
-      const attestation = await store.getBatch(request.params.order_id);
+      const batch = await store.getBatch(request.params.order_id);
 
-      if (attestation) {
-        return reply.send({
-          order_id: attestation.uuid,
-          payment: {
-            address: attestation.address,
-            amount: attestation.amount,
-          },
-          status: attestation.status,
-          orderTimeLeftInSeconds: attestation.order_time_limit_in_seconds,
-        });
+      if (batch) {
+        const parsedBatch = parseBatch(batch);
+        return reply.send(parsedBatch);
       }
 
       return reply.code(404).send('Not Found');
@@ -36,33 +24,17 @@ async function attestation(fastify: FastifyInstance) {
   fastify.route({
     url: '/attestation/submit',
     method: 'POST',
-    handler: async (request: FastifyRequest<AttestationQueryParameters>) => {
+    handler: async (request: FastifyRequest<AttestationQueryParameters>, reply) => {
       const privateKey = mnemonicToPrivateKey(constants.mnemonic);
       const savedBatch = await store.saveBatch(request.body as any, privateKey);
-      const METADATA_LABEL = 1234;
+      const batch = await store.getBatch(savedBatch.batchUuid);
 
-      // Compose metadata
-      const metadatum = composeMetadata(savedBatch.metadata.ipfs, METADATA_LABEL);
-
-      // Fetch utxos
-      const utxos = await blockfrostClient.getAddressUtxos(savedBatch.address);
-
-      if (utxos.length === 0) {
-        throw new Error('No utxo found!');
+      if (batch) {
+        const parsedBatch = parseBatch(batch);
+        return reply.send(parsedBatch);
       }
 
-      const { txHash, txBody, txMetadata } = composeTransaction(
-        savedBatch.address, // address with utxo
-        savedBatch.address, // output address (also used as change)
-        metadatum,
-        utxos,
-      );
-
-      const transaction = signTransaction(txBody, txMetadata, savedBatch.signKey);
-
-      await blockfrostClient.submitTx(transaction.to_bytes());
-
-      return txHash;
+      return reply.code(404).send('Not Found');
     },
   });
 }
