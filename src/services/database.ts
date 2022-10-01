@@ -1,5 +1,6 @@
 import { deriveAddress } from '@blockfrost/blockfrost-js';
 import pgLib from 'pg-promise';
+import crypto from 'crypto';
 import pg from 'pg-promise/typescript/pg-subset.js';
 
 import constants from '../constants.js';
@@ -58,8 +59,8 @@ class Store {
           id SERIAL PRIMARY KEY,
           ipfs_hash VARCHAR NOT NULL,
           metadata TEXT,
-          uuid VARCHAR NOT NULL, 
-          FOREIGN KEY(uuid) REFERENCES batch(id)
+          uuid VARCHAR NOT NULL UNIQUE, 
+          FOREIGN KEY(id) REFERENCES batch(id)
         )`,
     );
   };
@@ -88,23 +89,24 @@ class Store {
     // TODO: handle testnet here
     const { address } = deriveAddress(prvKey, 2, addressIndex, false);
 
-    const insertBatchQuery = pgp.helpers.insert(
-      [
-        {
-          uuid: uuid,
-          created_at: createdAt,
-          status: 'unpaid',
-          amount: constants.amountToPayInLovelaces,
-          address: address,
-          address_index: addressIndex,
-          order_time_limit_in_seconds: constants.orderLimitInSeconds,
-          pin_ipfs: input.pin_ipfs,
-        },
-      ],
-      batchColumnSet,
-    );
+    const insertBatchQuery =
+      pgp.helpers.insert(
+        [
+          {
+            uuid: uuid,
+            created_at: createdAt,
+            status: 'unpaid',
+            amount: constants.amountToPayInLovelaces,
+            address: address,
+            address_index: addressIndex,
+            order_time_limit_in_seconds: constants.orderLimitInSeconds,
+            pin_ipfs: input.pin_ipfs,
+          },
+        ],
+        batchColumnSet,
+      ) + ' RETURNING *';
 
-    await this.db.none(insertBatchQuery);
+    const insertedBatch = await this.db.one<Batch>(insertBatchQuery);
 
     const documentColumnSet = new pgp.helpers.ColumnSet(['id', 'uuid', 'metadata', 'ipfs_hash'], {
       table: 'document',
@@ -114,6 +116,7 @@ class Store {
 
     for (const row of input.ipfs) {
       documents.push({
+        id: insertedBatch.id,
         uuid: uuid,
         metadata: row.metadata,
         ipfs_hash: row.cid,

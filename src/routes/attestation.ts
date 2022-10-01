@@ -59,7 +59,7 @@ async function attestation(fastify: FastifyInstance) {
         metadatum,
         utxos,
       );
-
+      // @ts-ignore
       const transaction = signTransaction(txBody, txMetadata, savedBatch.signKey);
 
       await blockfrostClient.submitTx(transaction.to_bytes());

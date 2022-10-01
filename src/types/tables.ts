@@ -1,6 +1,7 @@
 import { Status } from './common.js';
 
 export type Batch = {
+  id: number;
   uuid: string;
   created_at: string;
   status: Status;

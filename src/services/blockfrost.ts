@@ -37,9 +37,9 @@ export class BlockfrostClient {
   };
 
   pin = async (path: string) => {
-    const pinnedItems = await this.ipfs.pin(path);
+    const pinnedItem = await this.ipfs.pin(path);
 
-    return pinnedItems;
+    return pinnedItem;
   };
 }
 

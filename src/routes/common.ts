@@ -19,6 +19,16 @@ async function common(fastify: FastifyInstance) {
     },
   });
 
+  fastify.route({
+    url: '/status',
+    method: 'GET',
+    handler: async (_request, reply) => {
+      return reply.send({
+        healthy: true,
+      });
+    },
+  });
+
   if (prometheusMetricsConfig) {
     fastify.route({
       url: '/prometheus',
