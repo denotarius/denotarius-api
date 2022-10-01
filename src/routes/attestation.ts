@@ -38,9 +38,8 @@ async function attestation(fastify: FastifyInstance) {
     url: '/attestation/submit',
     method: 'POST',
     handler: async (request: FastifyRequest<AttestationQueryParameters>) => {
-      const prvKey = mnemonicToPrivateKey(constants.mnemonic);
-      //@ts-ignore
-      const savedBatch = await store.saveBatch(request.body, prvKey);
+      const privateKey = mnemonicToPrivateKey(constants.mnemonic);
+      const savedBatch = await store.saveBatch(request.body as any, privateKey);
       const METADATA_LABEL = 1234;
 
       // Compose metadata
@@ -59,7 +58,7 @@ async function attestation(fastify: FastifyInstance) {
         metadatum,
         utxos,
       );
-      // @ts-ignore
+      //@ts-ignore
       const transaction = signTransaction(txBody, txMetadata, savedBatch.signKey);
 
       await blockfrostClient.submitTx(transaction.to_bytes());

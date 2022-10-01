@@ -10,6 +10,10 @@ import type { Status } from '../types/common';
 import { Bip32PrivateKey } from '@emurgo/cardano-serialization-lib-nodejs';
 import { blockfrostClient } from './blockfrost.js';
 
+const harden = (num: number): number => {
+  return 0x80000000 + num;
+};
+
 export const pgp = pgLib({});
 
 export const db = pgp({
@@ -65,7 +69,7 @@ class Store {
     );
   };
 
-  saveBatch = async (input: AttestationSumbitInput, prvKey: Bip32PrivateKey) => {
+  saveBatch = async (input: AttestationSumbitInput, privateKey: Bip32PrivateKey) => {
     const documentColumns = new pgp.helpers.ColumnSet(['id', 'uuid', 'metadata', 'ipfs_hash'], {
       table: 'document',
     });
@@ -90,8 +94,16 @@ class Store {
     const createdAt = getDate();
     const uuid = crypto.randomUUID();
     const addressIndex = await this.getBatchesCount();
+    const accountKey = privateKey
+      .derive(harden(1852))
+      .derive(harden(1815))
+      .derive(harden(0))
+      .to_public()
+      .as_bytes();
+
+    const xpub = Buffer.from(accountKey).toString('hex');
     const { address } = deriveAddress(
-      prvKey.to_bech32(),
+      xpub,
       2,
       addressIndex,
       blockfrostClient.api.projectId?.includes('testnet') || false,
@@ -131,7 +143,7 @@ class Store {
     const insertDocQuery = pgp.helpers.insert(documents, documentColumnSet);
     await this.db.none(insertDocQuery);
 
-    return { address, metadata: input, prvKey };
+    return { address, metadata: input, signKey: privateKey };
   };
 
   getBatch = async (orderId: string): Promise<Batch | null> => {
