@@ -90,7 +90,7 @@ export const composeTransaction = (
   );
 
   const outputAddr = Address.from_bech32(outputAddress);
-  const changeAddr = Address.from_bech32(address);
+  const utxoAddress = Address.from_bech32(address);
 
   // Set TTL to +2h from currentSlot
   // If the transaction is not included in a block before that slot it will be cancelled.
@@ -125,16 +125,11 @@ export const composeTransaction = (
 
     const inputValue = Value.new(BigNum.from_str(amount.toString()));
 
-    const input = TransactionInput.new(
-      TransactionHash.from_hex(utxo.tx_hash),
-      //@ts-expect-error TODO check this
-      BigNum.from_str(utxo.output_index.toString()),
-    );
-    const output = TransactionOutput.new(changeAddr, inputValue);
+    const input = TransactionInput.new(TransactionHash.from_hex(utxo.tx_hash), utxo.output_index);
+    const output = TransactionOutput.new(utxoAddress, inputValue);
 
     unspentOutputs.add(TransactionUnspentOutput.new(input, output));
-    //@ts-expect-error TODO check this
-    txBuilder.add_input(TransactionUnspentOutput.new(input, output));
+    txBuilder.add_input(utxoAddress, input, inputValue);
     utxoValue = utxoValue.checked_add(BigNum.from_str(amount.toString()));
   }
 
@@ -144,10 +139,7 @@ export const composeTransaction = (
   const changeOutputFee = txBuilder.fee_for_output(fakeChangeOutput);
 
   txFee = txFee.checked_add(changeOutputFee);
-  const changeOutput = TransactionOutput.new(
-    outputAddr,
-    Value.new(utxoValue.clamped_sub(changeOutputFee)),
-  );
+  const changeOutput = TransactionOutput.new(outputAddr, Value.new(utxoValue.clamped_sub(txFee)));
 
   txBuilder.add_output(changeOutput);
 
