@@ -135,13 +135,15 @@ class Store {
   };
 
   getActiveBatches = async () => {
-    const rows = await this.db.manyOrNone<Batch>(`SELECT * FROM batch where status = 'unpaid'`);
+    const rows = await this.db.manyOrNone<Batch>(
+      `SELECT * FROM batch WHERE status = 'unpaid' AND status != 'error'`,
+    );
 
     return rows;
   };
 
   updateBatchStatus = async (id: string, status: Status) => {
-    await this.db.query('UPDATE batch SET status = $1 where uuid = $2', [status, id]);
+    await this.db.query('UPDATE batch SET status = $1 WHERE uuid = $2', [status, id]);
   };
 
   getBatchesCount = async (): Promise<number> => {
@@ -151,7 +153,7 @@ class Store {
   };
 
   getDocumentsForBatch = async (id: string) => {
-    const row = await this.db.many<Doc>('SELECT * FROM document where id = $1', [id]);
+    const row = await this.db.many<Doc>('SELECT * FROM document WHERE id = $1', [id]);
 
     return row;
   };

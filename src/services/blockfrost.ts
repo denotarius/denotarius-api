@@ -13,6 +13,7 @@ export class BlockfrostClient {
 
   getAddressBalance = async (address: string) => {
     const addressData = await this.api.addresses(address);
+    console.log('addressData', addressData);
     const lovelaceAmountItem = addressData.amount.find(
       amountItem => amountItem.unit === 'lovelace',
     );
