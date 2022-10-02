@@ -10,7 +10,7 @@ const debug: string = config.get('server.debug');
 const server = app({
   logger: {
     transport:
-      process.env.NODE_ENV === 'development' || debug
+      process.env.NODE_ENV?.startsWith('dev') || debug
         ? {
             target: 'pino-pretty',
             options: {
