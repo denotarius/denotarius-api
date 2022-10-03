@@ -24,6 +24,7 @@
     "bip39": "^3.0.4",
     "config": "^3.3.8",
     "dotenv": "^16.0.2",
+    "esbuild-linux-64": "^0.15.10",
     "fastify": "^4.6.0",
     "moment": "^2.29.4",
     "pg-promise": "^10.12.0",
