@@ -12,6 +12,7 @@
     "dev:mainnet": "yarn build && NODE_ENV=dev-mainnet yarn node ./dist/server.js",
     "lint": "eslint ./src/**/*.ts",
     "type-check": "tsc --project tsconfig.json",
+    "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
