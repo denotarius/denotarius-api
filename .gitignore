@@ -103,4 +103,4 @@ dist
 # TernJS port file
 .tern-port
 
-denotarius.db
+install-state.gz

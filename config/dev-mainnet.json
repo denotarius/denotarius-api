@@ -1,0 +1,20 @@
+{
+  "server": {
+    "port": 3000,
+    "debug": false
+  },
+  "db": {
+    "connectionString": "postgresql://localhost/postgres",
+    "maxConnections": 2,
+    "connectionTimeoutMs": 3000,
+    "idleTimeoutMs": 10000,
+    "ssl": false
+  },
+  "blockfrost": {
+    "apiKey": "mainnetTx0zzQFPRzCh5bkmQ3xxE7D4lZriU9Av",
+    "ipfsKey": "ipfsqwMez5XOuDzzio6ZQkpSjApKe4RpAwfi"
+  },
+  "amountToPayInLovelaces": 100000000,
+  "mnemonic": "all all all all all all all all all all all all",
+  "metadataLabel": 1234
+}

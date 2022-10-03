@@ -1,0 +1,8 @@
+dist
+node_modules
+.eslintrc.js
+jest.config.js
+jest-puppeteer.config.js
+babel.config.js
+src/types/openapi.ts
+ava.config.js

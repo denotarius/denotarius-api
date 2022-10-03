@@ -1,38 +1,67 @@
-import { config as dotEnvConfig } from 'https://deno.land/x/dotenv@v1.0.1/mod.ts';
+import config from 'config';
+import { readFileSync } from 'fs';
 
-const config = dotEnvConfig({});
-
-if (!config.MNEMONIC) {
-  throw Error('environment variable `MNEMONIC` is not set');
+if (!config.has('mnemonic')) {
+  throw new Error('config variable `mnemonic` is not set');
 }
 
-if (!config.BLOCKFROST_PROJECT_ID) {
-  throw Error('environment variable `BLOCKFROST_PROJECT_ID` is not set');
-}
-if (!config.BLOCKFROST_NETWORK) {
-  throw Error('environment variable `BLOCKFROST_NETWORK` is not set');
+if (!config.has('blockfrost.apiKey')) {
+  throw new Error('config variable `blockfrost.apiKey` is not set');
 }
 
-if (!config.BLOCKFROST_IPFS_TOKEN) {
-  throw Error('environment variable `BLOCKFROST_IPFS_TOKEN` is not set');
+if (!config.has('blockfrost.ipfsKey')) {
+  throw new Error('config variable `blockfrost.ipfsKey` is not set');
 }
 
-export const VERSION = '1.0.0';
-export const ROUTES = {
-  STATUS_ROUTE: new URLPattern({ pathname: '/status' }),
-  ROOT_ROUTE: new URLPattern({ pathname: '/' }),
-  ATTESTATION_SUBMIT_ROUTE: new URLPattern({ pathname: '/attestation/submit' }),
-  ATTESTATION_ORDER_ROUTE: new URLPattern({
-    pathname: '/attestation/:order_id',
-  }),
-};
-export const AMOUNT_TO_PAY_IN_LOVELACES = config.AMOUNT_TO_PAY_IN_LOVELACES
-  ? Number(config.AMOUNT_TO_PAY_IN_LOVELACES)
-  : 1000000;
+let pgConnectionString = '';
 
-export const ORDER_TIME_LIMIT_IN_SECONDS = 1800;
-export const MNEMONIC: string = config.MNEMONIC;
-export const IS_TESTNET = config.BLOCKFROST_NETWORK === 'mainnet' ? false : true;
-export const BLOCKFROST_PROJECT_ID = config.BLOCKFROST_PROJECT_ID;
-export const BLOCKFROST_NETWORK = config.BLOCKFROST_NETWORK;
-export const BLOCKFROST_IPFS_TOKEN = config.BLOCKFROST_IPFS_TOKEN;
+if (config.has('db.connectionString')) {
+  pgConnectionString = config.get('db.connectionString');
+} else {
+  const filename: string = config.get('db.connectionStringFile');
+
+  pgConnectionString = readFileSync(filename, 'utf8');
+}
+
+const pgMaxConnections: number = config.has('db.maxConnections')
+  ? config.get('db.maxConnections')
+  : 2;
+const pgConnectionTimeoutMs: number = config.has('db.connectionTimeoutMs')
+  ? config.get('db.connectionTimeoutMs')
+  : 3000;
+const pgIdleTimeoutMs: number = config.has('db.idleTimeoutMs')
+  ? config.get('db.idleTimeoutMs')
+  : 10_000;
+
+const pgSsl: boolean | Record<string, unknown> = config.has('db.ssl')
+  ? config.get('db.ssl')
+  : {
+      rejectUnauthorized: false,
+    };
+
+export default {
+  orderLimitInSeconds: 1800,
+  mnemonic: config.get<string>('mnemonic'),
+  blockfrost: {
+    apiKey: config.get<string>('blockfrost.apiKey'),
+    ipfsKey: config.get<string>('blockfrost.ipfsKey'),
+  },
+  db: {
+    pgConnectionString,
+    pgMaxConnections,
+    pgConnectionTimeoutMs,
+    pgIdleTimeoutMs,
+    pgSsl,
+  },
+  cardano: {
+    metadataLabel: config.has('cardano.metadataLabel')
+      ? config.get<'string'>('cardano.metadataLabel')
+      : 1234,
+    amountToPayInLovelaces: config.get('amountToPayInLovelaces')
+      ? Number(config.get('amountToPayInLovelaces'))
+      : 1_000_0000,
+    coinPerUtxoSize: 16_384,
+    maxValueSize: 5000,
+    maxTxSize: 16_384,
+  },
+} as const;
