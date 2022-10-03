@@ -1,7 +1,8 @@
 {
   "server": {
     "port": 3000,
-    "debug": false
+    "debug": false,
+    "prometheusMetrics": false
   },
   "db": {
     "connectionString": "postgresql://localhost/postgres",
@@ -15,5 +16,6 @@
     "ipfsKey": "ipfsqwMez5XOuDzzio6ZQkpSjApKe4RpAwfi"
   },
   "amountToPayInLovelaces": 100000000,
-  "mnemonic": "all all all all all all all all all all all all"
+  "mnemonic": "all all all all all all all all all all all all",
+  "metadataLabel": 1234
 }

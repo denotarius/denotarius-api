@@ -1,6 +1,6 @@
 import * as cardano from '../keys.js';
 import { describe, test, expect } from 'vitest';
-import * as fixtures from '../__fixtures__/keys.js';
+import * as fixtures from '../__fixtures__/keys.fixtures.js';
 import { deriveAddress } from '@blockfrost/blockfrost-js';
 
 describe('keys generation', () => {

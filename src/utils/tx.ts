@@ -1,4 +1,5 @@
 import { Responses } from '@blockfrost/blockfrost-js';
+import constants from '../constants.js';
 import {
   Address,
   AuxiliaryData,
@@ -24,9 +25,8 @@ import {
   Vkeywitnesses,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 
-import constants from '../constants.js';
-
-export const composeMetadata = (data: unknown, metadataLabel: number): TransactionMetadatum => {
+export const composeMetadata = (data: unknown): TransactionMetadatum => {
+  const { metadataLabel } = constants.cardano;
   const object = {
     [metadataLabel]: data,
   };
@@ -65,10 +65,8 @@ export const signTransaction = (
 export const composeTransaction = (
   address: string,
   outputAddress: string,
-  // outputAmount: string,
   metadatum: TransactionMetadatum,
   utxos: Responses['address_utxo_content'],
-  // currentSlot: number,
 ): {
   txHash: string;
   txBody: TransactionBody;
@@ -91,19 +89,6 @@ export const composeTransaction = (
 
   const outputAddr = Address.from_bech32(outputAddress);
   const utxoAddress = Address.from_bech32(address);
-
-  // Set TTL to +2h from currentSlot
-  // If the transaction is not included in a block before that slot it will be cancelled.
-  // const ttl = currentSlot + 7200;
-  // txBuilder.set_ttl(BigNum.from_str(ttl.toString()));
-
-  // Add output to the tx
-  // txBuilder.add_output(
-  //   TransactionOutput.new(
-  //     outputAddr,
-  //     Value.new(BigNum.from_str(outputAmount)),
-  //   ),
-  // );
 
   // set metadata
   const txMetadata = AuxiliaryData.from_bytes(metadatum.to_bytes());

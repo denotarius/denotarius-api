@@ -95,7 +95,7 @@ class Store {
             uuid: batchUuid,
             created_at: getDate(),
             status: 'unpaid',
-            amount: constants.amountToPayInLovelaces,
+            amount: constants.cardano.amountToPayInLovelaces,
             address: address,
             address_index: addressIndex,
             order_time_limit_in_seconds: constants.orderLimitInSeconds,
@@ -130,7 +130,7 @@ class Store {
 
   getBatch = async (orderId: string): Promise<Batch | null> => {
     const batch = await this.db.oneOrNone<Batch>('SELECT * FROM batch WHERE uuid = $1', [orderId]);
-
+    console.log('getBatch', batch);
     return batch;
   };
 

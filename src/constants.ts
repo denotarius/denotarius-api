@@ -40,15 +40,12 @@ const pgSsl: boolean | Record<string, unknown> = config.has('db.ssl')
     };
 
 export default {
+  orderLimitInSeconds: 1800,
+  mnemonic: config.get<string>('mnemonic'),
   blockfrost: {
     apiKey: config.get<string>('blockfrost.apiKey'),
     ipfsKey: config.get<string>('blockfrost.ipfsKey'),
   },
-  orderLimitInSeconds: 1800,
-  amountToPayInLovelaces: config.get('amountToPayInLovelaces')
-    ? Number(config.get('amountToPayInLovelaces'))
-    : 1_000_000,
-  mnemonic: config.get<string>('mnemonic'),
   db: {
     pgConnectionString,
     pgMaxConnections,
@@ -57,6 +54,12 @@ export default {
     pgSsl,
   },
   cardano: {
+    metadataLabel: config.has('cardano.metadataLabel')
+      ? config.get<'string'>('cardano.metadataLabel')
+      : 1234,
+    amountToPayInLovelaces: config.get('amountToPayInLovelaces')
+      ? Number(config.get('amountToPayInLovelaces'))
+      : 1_000_0000,
     coinPerUtxoSize: 16_384,
     maxValueSize: 5000,
     maxTxSize: 16_384,

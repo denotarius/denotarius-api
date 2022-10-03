@@ -28,7 +28,7 @@ export default async () => {
         return;
       }
 
-      if (addressBalance >= constants.amountToPayInLovelaces) {
+      if (addressBalance >= constants.cardano.amountToPayInLovelaces) {
         const documents = await store.getDocumentsForBatch(batch.uuid);
 
         // pin ipfs hashes after payment
@@ -38,15 +38,14 @@ export default async () => {
           }
         }
 
-        const METADATA_LABEL = 1234;
-
         // Compose metadata
-        const metadatum = composeMetadata(documents[0], METADATA_LABEL);
+        const metadatum = composeMetadata(documents[0]);
 
         // Fetch utxos
         const utxos = await blockfrostClient.getAddressUtxos(batch.address);
 
         if (utxos.length === 0) {
+          console.error('Cannot find the utxo on address', batch.address);
           await store.updateBatchStatus(batch.uuid, 'error');
         }
 

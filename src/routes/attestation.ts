@@ -33,7 +33,7 @@ async function attestation(fastify: FastifyInstance) {
       const xpub = getXpub(accountKey);
       const { address } = deriveAddress(
         xpub,
-        1,
+        0,
         addressIndex,
         blockfrostClient.api.projectId?.includes('testnet') || false,
       );
