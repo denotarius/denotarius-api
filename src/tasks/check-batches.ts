@@ -10,6 +10,8 @@ export default async () => {
   const activebatches = await store.getActiveBatches();
 
   for (const batch of activebatches) {
+    await store.updateBatchStatus(batch.uuid, 'progress');
+
     try {
       // expire unpaid batches
       const momentNow = moment(new Date());
@@ -38,8 +40,15 @@ export default async () => {
           }
         }
 
+        const documentsToRecordOnChain = documents.map(doc => {
+          return {
+            ipfs_hash: doc.ipfs_hash,
+            ...(doc.metadata ? { metadada: doc.metadata } : {}),
+          };
+        });
+
         // Compose metadata
-        const metadatum = composeMetadata(documents[0]);
+        const metadatum = composeMetadata(documentsToRecordOnChain);
 
         // Fetch utxos
         const utxos = await blockfrostClient.getAddressUtxos(batch.address);
@@ -60,9 +69,9 @@ export default async () => {
         const accountKey = getAccountKey(privateKey);
         const signKey = getUtxoKey(accountKey, batch.address_index);
         const transaction = signTransaction(txBody, txMetadata, signKey.to_raw_key());
+        const submittedHash = await blockfrostClient.submitTx(transaction.to_bytes());
 
-        await blockfrostClient.submitTx(transaction.to_bytes());
-
+        await store.storeTxHash(batch.uuid, submittedHash);
         await store.updateBatchStatus(batch.uuid, 'paid');
       }
     } catch (error) {

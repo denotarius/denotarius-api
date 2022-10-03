@@ -27,13 +27,14 @@ import {
 
 export const composeMetadata = (data: unknown): TransactionMetadatum => {
   const { metadataLabel } = constants.cardano;
-  const object = {
+
+  const obj = {
     [metadataLabel]: data,
   };
 
   try {
     const metadata = encode_json_str_to_metadatum(
-      JSON.stringify(object),
+      JSON.stringify(obj),
       MetadataJsonSchema.BasicConversions,
     );
 
@@ -108,8 +109,7 @@ export const composeTransaction = (
 
     if (!amount) continue;
 
-    const inputValue = Value.new(BigNum.from_str(amount.toString()));
-
+    const inputValue = Value.new(BigNum.from_str(amount));
     const input = TransactionInput.new(TransactionHash.from_hex(utxo.tx_hash), utxo.output_index);
     const output = TransactionOutput.new(utxoAddress, inputValue);
 
@@ -127,6 +127,7 @@ export const composeTransaction = (
   const changeOutput = TransactionOutput.new(outputAddr, Value.new(utxoValue.clamped_sub(txFee)));
 
   txBuilder.add_output(changeOutput);
+  txBuilder.set_fee(txFee);
 
   // Build transaction
   const txBody = txBuilder.build_tx().body();

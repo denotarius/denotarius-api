@@ -1,9 +1,7 @@
 import pgLib from 'pg-promise';
-import crypto from 'crypto';
 import pg from 'pg-promise/typescript/pg-subset.js';
 import constants from '../constants.js';
 import { AttestationSumbitInput } from '../types/routes.js';
-import { getDate } from '../utils/common.js';
 import type { Batch, Doc } from '../types/tables';
 import type { Status } from '../types/common';
 
@@ -39,61 +37,42 @@ class Store {
   createTables = async () => {
     await this.db.query(
       `CREATE TABLE IF NOT EXISTS batch (
-          id SERIAL PRIMARY KEY,
-          uuid VARCHAR NOT NULL,
-          created_at VARCHAR NOT NULL,
-          status VARCHAR NOT NULL,
-          amount INT NOT NULL,
-          address VARCHAR NOT NULL,
-          address_index INT NOT NULL,
+          uuid UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+          status TEXT NOT NULL,
+          amount BIGINT NOT NULL,
+          address TEXT NOT NULL,
+          address_index BIGINT NOT NULL,
           order_time_limit_in_seconds INT NOT NULL,
-          pin_ipfs BOOL NOT NULL
+          pin_ipfs BOOL DEFAULT FALSE NOT NULL,
+          tx_hash TEXT
         )`,
     );
 
     await this.db.query(
       `CREATE TABLE IF NOT EXISTS document (
-          id SERIAL PRIMARY KEY,
-          batch_id INT NOT NULL,
-          ipfs_hash VARCHAR NOT NULL,
+          batch_id UUID,
+          ipfs_hash TEXT NOT NULL,
           metadata TEXT,
-          uuid VARCHAR NOT NULL UNIQUE, 
-          FOREIGN KEY(batch_id) REFERENCES batch(id)
+          FOREIGN KEY(batch_id) REFERENCES batch(uuid)
         )`,
     );
   };
 
   saveBatch = async (input: AttestationSumbitInput, addressIndex: number, address: string) => {
-    const documentColumns = new pgp.helpers.ColumnSet(
-      ['batch_id', 'uuid', 'metadata', 'ipfs_hash'],
-      {
-        table: 'document',
-      },
-    );
+    const documentColumns = new pgp.helpers.ColumnSet(['batch_id', 'metadata', 'ipfs_hash'], {
+      table: 'document',
+    });
 
     const batchColumns = new pgp.helpers.ColumnSet(
-      [
-        'uuid',
-        'created_at',
-        'status',
-        'amount',
-        'address',
-        'address_index',
-        'order_time_limit_in_seconds',
-        'pin_ipfs',
-      ],
-      {
-        table: 'batch',
-      },
+      ['status', 'amount', 'address', 'address_index', 'order_time_limit_in_seconds', 'pin_ipfs'],
+      { table: 'batch' },
     );
-    const batchUuid = crypto.randomUUID();
     const batchColumnSet = batchColumns;
     const insertBatchQuery =
       pgp.helpers.insert(
         [
           {
-            uuid: batchUuid,
-            created_at: getDate(),
             status: 'unpaid',
             amount: constants.cardano.amountToPayInLovelaces,
             address: address,
@@ -111,8 +90,7 @@ class Store {
 
     for (const row of input.ipfs) {
       documents.push({
-        batch_id: insertedBatch.id,
-        uuid: crypto.randomUUID(),
+        batch_id: insertedBatch.uuid,
         metadata: row.metadata,
         ipfs_hash: row.cid,
       });
@@ -122,7 +100,7 @@ class Store {
     await this.db.none(insertDocQuery);
 
     return {
-      batchUuid,
+      batchId: insertedBatch.uuid,
       address,
       metadata: input,
     };
@@ -130,14 +108,12 @@ class Store {
 
   getBatch = async (orderId: string): Promise<Batch | null> => {
     const batch = await this.db.oneOrNone<Batch>('SELECT * FROM batch WHERE uuid = $1', [orderId]);
-    console.log('getBatch', batch);
+
     return batch;
   };
 
   getActiveBatches = async () => {
-    const rows = await this.db.manyOrNone<Batch>(
-      `SELECT * FROM batch WHERE status = 'unpaid' AND status != 'error'`,
-    );
+    const rows = await this.db.manyOrNone<Batch>(`SELECT * FROM batch WHERE status = 'unpaid'`);
 
     return rows;
   };
@@ -152,10 +128,14 @@ class Store {
     return row.count;
   };
 
-  getDocumentsForBatch = async (id: string) => {
-    const row = await this.db.many<Doc>('SELECT * FROM document WHERE id = $1', [id]);
+  getDocumentsForBatch = async (uuid: string) => {
+    const row = await this.db.many<Doc>('SELECT * FROM document WHERE batch_id = $1', [uuid]);
 
     return row;
+  };
+
+  storeTxHash = async (id: string, txHash: string) => {
+    await this.db.query('UPDATE batch SET tx_hash = $1 WHERE uuid = $2', [txHash, id]);
   };
 }
 
