@@ -31,8 +31,8 @@ You can find configuration files in `config/` folder. *NODE_ENV* is the same as 
     "ssl": false
   },
   "blockfrost": {
-    "apiKey": "testnetD3t6mMoXwpxtRA3dVZY93XvP0JPdSTiH",
-    "ipfsKey": "ipfsqwMez5XOuDzzio6ZQkpSjApKe4RpAwfi"
+    "apiKey": "testnetD3t6mMoXwpxtRA3xdVZY93XvP0JPdSTiH",
+    "ipfsKey": "ipfsqwMez5XOuDzzio6ZQxkpSjApKe4RpAwfi"
   },
   "amountToPayInLovelaces": 100000000,
   "mnemonic": "all all all all all all all all all all all all",
