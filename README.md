@@ -14,7 +14,7 @@ production: `yarn start`
 
 #### CONFIGURATION
 
-You can find configuration files in `config/` folder. *NODE_ENV* is the same as configuration filename (`config/dev-testnet.json`)
+You can find configuration files in `config/` folder.
 
 ```json
 {
