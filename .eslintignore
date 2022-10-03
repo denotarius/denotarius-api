@@ -6,3 +6,4 @@ jest-puppeteer.config.js
 babel.config.js
 src/types/openapi.ts
 ava.config.js
+.yarn/**
