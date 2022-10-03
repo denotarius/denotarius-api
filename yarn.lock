@@ -91,6 +91,7 @@ __metadata:
     "@emurgo/cardano-serialization-lib-nodejs": 11.0.5
     "@fastify/autoload": ^5.4.0
     "@types/config": 0.0.41
+    "@types/node": ^18.8.0
     "@typescript-eslint/eslint-plugin": ^5.30.4
     "@typescript-eslint/parser": 5.30.4
     "@vitest/coverage-c8": ^0.23.4
@@ -541,6 +542,13 @@ __metadata:
   version: 14.18.31
   resolution: "@types/node@npm:14.18.31"
   checksum: df33021d673a5e3c943cf96c9f3fbccf364d20f487b2ab7eb49db144974c2049f0a91e9358df09235f543c1f0b11388c5b0b636ae1f2ed55a27c75f63bc3d2c5
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.8.0":
+  version: 18.8.0
+  resolution: "@types/node@npm:18.8.0"
+  checksum: 3433cbc22e90fafb047f93b3ef05ba01a07f780a24ff1af393f435f807537b533fe9e8a816586825f4c5fd5336c3e80225571f44ec3b6479c463408c072773e7
   languageName: node
   linkType: hard
 
