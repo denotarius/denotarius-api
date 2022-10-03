@@ -55,7 +55,7 @@ export default {
   },
   cardano: {
     metadataLabel: config.has('cardano.metadataLabel')
-      ? config.get<'string'>('cardano.metadataLabel')
+      ? config.get<number>('cardano.metadataLabel')
       : 1234,
     amountToPayInLovelaces: config.get('amountToPayInLovelaces')
       ? Number(config.get('amountToPayInLovelaces'))
