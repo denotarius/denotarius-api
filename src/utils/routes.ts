@@ -9,5 +9,6 @@ export const parseBatch = (batch: Batch) => {
     },
     status: batch.status,
     orderTimeLeftInSeconds: batch.order_time_limit_in_seconds,
+    tx_hash: batch.tx_hash,
   };
 };
