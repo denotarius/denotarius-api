@@ -10,6 +10,7 @@ export type Batch = {
   address_index: number;
   order_time_limit_in_seconds: number;
   pin_ipfs: boolean;
+  tx_hash?: string;
 };
 
 export interface Doc {
