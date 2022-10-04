@@ -98,6 +98,7 @@ __metadata:
     bip39: ^3.0.4
     config: ^3.3.8
     dotenv: ^16.0.2
+    esbuild-linux-64: ^0.15.10
     eslint: 8.19.0
     eslint-config-prettier: 8.5.0
     eslint-plugin-import: 2.26.0
@@ -1784,7 +1785,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-linux-64@npm:0.15.10":
+"esbuild-linux-64@npm:0.15.10, esbuild-linux-64@npm:^0.15.10":
   version: 0.15.10
   resolution: "esbuild-linux-64@npm:0.15.10"
   conditions: os=linux & cpu=x64
