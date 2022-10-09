@@ -4,6 +4,17 @@ export interface AttestationQueryParameters {
   Params: {
     order_id: string;
   };
+  Body: AttestationSumbitInput;
+}
+
+export interface AttestationSubmitQueryParameters {
+  Body: AttestationSumbitInput;
+}
+
+export interface AttestationSubmit {
+  Params: {
+    order_id: string;
+  };
 }
 
 export interface AttestationSumbitInput {

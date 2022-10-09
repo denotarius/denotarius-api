@@ -10,8 +10,6 @@ export default async () => {
   const activebatches = await store.getActiveBatches();
 
   for (const batch of activebatches) {
-    await store.updateBatchStatus(batch.uuid, 'progress');
-
     try {
       // expire unpaid batches
       const momentNow = moment(new Date());
@@ -31,6 +29,11 @@ export default async () => {
       }
 
       if (addressBalance >= constants.cardano.amountToPayInLovelaces) {
+        if (batch.status === 'progress') {
+          return;
+        }
+
+        await store.updateBatchStatus(batch.uuid, 'progress');
         const documents = await store.getDocumentsForBatch(batch.uuid);
 
         // pin ipfs hashes after payment

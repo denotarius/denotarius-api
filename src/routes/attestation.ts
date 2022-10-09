@@ -38,7 +38,7 @@ async function attestation(fastify: FastifyInstance) {
         blockfrostClient.api.projectId?.includes('testnet') || false,
       );
 
-      const savedBatch = await store.saveBatch(request.body as any, addressIndex, address);
+      const savedBatch = await store.saveBatch(request.body, addressIndex, address);
       const batch = await store.getBatch(savedBatch.batchId);
 
       if (batch) {
