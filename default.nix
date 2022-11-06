@@ -8,7 +8,7 @@
 with pkgs;
 with import (pkgs.path + "/nixos/lib/testing-python.nix") { inherit system; };
 rec {
-  blockfrost-vindler =
+  denotarius-api =
     let
       src = lib.cleanSource ./.;
 
