@@ -4,6 +4,7 @@ import constants from '../constants.js';
 import { AttestationSumbitInput } from '../types/routes.js';
 import type { Batch, Doc } from '../types/tables';
 import type { Status } from '../types/common';
+import { validate } from 'uuid';
 
 export const pgp = pgLib({});
 
@@ -107,9 +108,15 @@ class Store {
   };
 
   getBatch = async (orderId: string): Promise<Batch | null> => {
-    const batch = await this.db.oneOrNone<Batch>('SELECT * FROM batch WHERE uuid = $1', [orderId]);
+    if (validate(orderId)) {
+      const batch = await this.db.oneOrNone<Batch>('SELECT * FROM batch WHERE uuid = $1', [
+        orderId,
+      ]);
 
-    return batch;
+      return batch;
+    }
+
+    return null;
   };
 
   getActiveBatches = async () => {
