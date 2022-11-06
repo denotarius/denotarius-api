@@ -5,7 +5,7 @@ import { blockfrostClient } from '../services/blockfrost.js';
 import { store } from '../services/database.js';
 import { AttestationQueryParameters } from '../types/routes.js';
 import { mnemonicToPrivateKey, getAccountKey, getXpub } from '../utils/keys.js';
-import { parseBatch } from '../utils/routes.js';
+import { parseBatch, isTestnet } from '../utils/routes.js';
 
 async function attestation(fastify: FastifyInstance) {
   fastify.route({
@@ -35,7 +35,7 @@ async function attestation(fastify: FastifyInstance) {
         xpub,
         0,
         addressIndex,
-        blockfrostClient.api.projectId?.includes('testnet') || false,
+        isTestnet(blockfrostClient.api.projectId),
       );
 
       const savedBatch = await store.saveBatch(request.body, addressIndex, address);
