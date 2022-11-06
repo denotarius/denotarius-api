@@ -10,6 +10,8 @@
     "start": "yarn build && NODE_ENV=production yarn node ./dist/server.js",
     "dev:testnet": "yarn build && NODE_ENV=dev-testnet yarn node ./dist/server.js",
     "dev:mainnet": "yarn build && NODE_ENV=dev-mainnet yarn node ./dist/server.js",
+    "dev:preview": "yarn build && NODE_ENV=dev-preview yarn node ./dist/server.js",
+    "dev:preprod": "yarn build && NODE_ENV=dev-preprod yarn node ./dist/server.js",
     "lint": "eslint ./src/**/*.ts",
     "type-check": "tsc --project tsconfig.json",
     "test": "vitest",
