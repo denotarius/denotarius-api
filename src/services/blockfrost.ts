@@ -12,16 +12,20 @@ export class BlockfrostClient {
   }
 
   getAddressBalance = async (address: string) => {
-    const addressData = await this.api.addresses(address);
-    const lovelaceAmountItem = addressData.amount.find(
-      amountItem => amountItem.unit === 'lovelace',
-    );
+    try {
+      const addressData = await this.api.addresses(address);
+      const lovelaceAmountItem = addressData.amount.find(
+        amountItem => amountItem.unit === 'lovelace',
+      );
 
-    if (lovelaceAmountItem) {
-      return Number(lovelaceAmountItem.quantity);
+      if (lovelaceAmountItem) {
+        return Number(lovelaceAmountItem.quantity);
+      }
+    } catch (error) {
+      return 0;
     }
 
-    return;
+    return 0;
   };
 
   getAddressUtxos = async (address: string) => {
