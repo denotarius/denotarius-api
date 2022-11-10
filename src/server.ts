@@ -5,6 +5,7 @@ import { store } from './services/database.js';
 await store.init();
 
 const port = Number(config.get('server.port'));
+const host = String(config.get('server.host'));
 const debug: string = config.get('server.debug');
 
 const server = app({
@@ -22,7 +23,7 @@ const server = app({
   ignoreTrailingSlash: true,
 });
 
-server.listen({ port }, error => {
+server.listen({ port, host }, error => {
   if (error) {
     console.log(error);
     process.exit(1);

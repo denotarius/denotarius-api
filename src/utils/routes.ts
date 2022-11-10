@@ -16,13 +16,9 @@ export const parseBatch = (batch: Batch) => {
 export const isTestnet = (projectId?: string) => {
   if (!projectId) return false;
 
-  if (
-    projectId.includes('testnet') ||
-    projectId.includes('preview') ||
-    projectId.includes('preprod')
-  ) {
-    return true;
+  if (projectId.includes('mainnet')) {
+    return false;
   }
 
-  return false;
+  return true;
 };
