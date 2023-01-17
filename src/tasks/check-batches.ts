@@ -28,6 +28,9 @@ export default async () => {
         return;
       }
 
+      console.log('addressBalance', addressBalance);
+      console.log('amountToPayInLovelaces', constants.cardano.amountToPayInLovelaces);
+
       if (addressBalance >= constants.cardano.amountToPayInLovelaces) {
         if (batch.status === 'progress') {
           return;
