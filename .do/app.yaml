@@ -1,0 +1,8 @@
+name: denotarius-api
+services:
+- dockerfile_path: Dockerfile
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: denotarius/denotarius-api
+  name: sample-dockerfile
