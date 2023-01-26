@@ -1,6 +1,6 @@
 name: denotarius-api
 services:
-- dockerfile_path: Dockerfile
+- environment_slug: node-js
   github:
     branch: main
     deploy_on_push: true
